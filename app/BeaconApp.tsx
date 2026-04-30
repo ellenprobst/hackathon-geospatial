@@ -24,6 +24,19 @@ import { Icon } from './components/Icon'
 
 const STORAGE_KEY = 'the6watch_locations'
 
+const haversineKm = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+  const toRad = (d: number) => d * Math.PI / 180;
+  const R = 6371;
+  const dLat = toRad(b.lat - a.lat), dLng = toRad(b.lng - a.lng);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+};
+
+const eventIntersectsLocation = (ev: { lat: number; lng: number; radiusM: number }, loc: { lat: number; lng: number; radiusKm: number }) => {
+  const km = haversineKm({ lat: ev.lat, lng: ev.lng }, { lat: loc.lat, lng: loc.lng });
+  return km <= (ev.radiusM || 1000) / 1000 + (loc.radiusKm || 1.5);
+};
+
 const DEFAULT_LOCATIONS: UserLocation[] = [
   {
     id: 'L01',
@@ -139,6 +152,7 @@ export default function BeaconApp() {
   > | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [draftPin, setDraftPin] = useState<DraftPin | null>(null)
+  const [myLocationsOnly, setMyLocationsOnly] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [focusTarget, setFocusTarget] = useState<{
     lat: number
@@ -152,7 +166,11 @@ export default function BeaconApp() {
     setTimeout(() => setToast(null), 2200)
   }
 
-  const visibleEvents = SEED_EVENTS.filter((e) => layers[e.priority])
+  const visibleEvents = SEED_EVENTS.filter((e) => {
+    if (!layers[e.priority]) return false;
+    if (myLocationsOnly && !locations.some((loc) => eventIntersectsLocation(e, loc))) return false;
+    return true;
+  })
 
   const onMapClick = (pt: { lat: number; lng: number }) => {
     if (subOpen)
@@ -270,6 +288,9 @@ export default function BeaconApp() {
               events={visibleEvents}
               layers={layers}
               setLayers={setLayers}
+              locations={locations}
+              myLocationsOnly={myLocationsOnly}
+              setMyLocationsOnly={setMyLocationsOnly}
             />
             <button className='btn full' onClick={startCreate}>
               <Icon name='plus' /> ADD LOCATION

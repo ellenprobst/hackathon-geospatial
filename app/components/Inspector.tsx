@@ -1,14 +1,17 @@
 'use client';
 
-import type { AlertEvent, LayerVisibility, Priority } from '../types';
+import type { AlertEvent, LayerVisibility, Priority, UserLocation } from '../types';
 
 interface InspectorProps {
   events: AlertEvent[];
   layers: LayerVisibility;
   setLayers: (l: LayerVisibility) => void;
+  locations?: UserLocation[];
+  myLocationsOnly?: boolean;
+  setMyLocationsOnly?: (v: boolean) => void;
 }
 
-export function Inspector({ events, layers, setLayers }: InspectorProps) {
+export function Inspector({ events, layers, setLayers, locations = [], myLocationsOnly = false, setMyLocationsOnly }: InspectorProps) {
   const counts = {
     CRITICAL: events.filter(e => e.priority === 'CRITICAL').length,
     URGENT: events.filter(e => e.priority === 'URGENT').length,
@@ -47,6 +50,19 @@ export function Inspector({ events, layers, setLayers }: InspectorProps) {
               <span className={`swatch ${layers.OPPORTUNITY ? 'on opp' : 'off'}`} /><span>OPPORTUNITY</span><span className="layer-cnt">{counts.OPPORTUNITY}</span>
             </div>
           </div>
+          {locations.length > 0 && setMyLocationsOnly && (
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--rule-soft)' }}>
+              <div
+                className="layer"
+                onClick={() => setMyLocationsOnly(!myLocationsOnly)}
+                style={{ padding: '4px 0' }}
+              >
+                <span className={`loc-filter-toggle${myLocationsOnly ? ' on' : ''}`} />
+                <span>MY LOCATIONS ONLY</span>
+                <span className="layer-cnt">{locations.length} BEACONS</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

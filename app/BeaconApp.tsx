@@ -1,39 +1,48 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { SEED_EVENTS } from './data/events';
 import type { AlertEvent, DraftPin, LayerVisibility, UserLocation } from './types';
 import { Rail } from './components/Rail';
 import { TopBar } from './components/TopBar';
 import { Inspector } from './components/Inspector';
-import { Scrubber } from './components/Scrubber';
 import { TorontoMap } from './components/TorontoMap';
 import { AlertDrawer, HistoryPanel, LocationsPanel, ShareModal } from './components/Panels';
 import { SubscribePanel } from './components/SubFlow';
 import { Icon } from './components/Icon';
+
+const STORAGE_KEY = 'the6watch_locations';
+
+const DEFAULT_LOCATIONS: UserLocation[] = [
+  { id: 'L01', name: 'HOME', address: '64 Brunswick Ave, Toronto', kind: 'home', priorities: ['CRITICAL', 'URGENT', 'ADVISORY'], notifs: ['push', 'sms'], radiusKm: 1.5, lat: 43.6650, lng: -79.4065 },
+  { id: 'L02', name: 'OFFICE', address: '88 Queen St E, Toronto', kind: 'office', priorities: ['URGENT', 'ADVISORY'], notifs: ['email', 'desktop'], radiusKm: 1.0, lat: 43.6537, lng: -79.3760 },
+  { id: 'L03', name: 'COTTAGE', address: '46 Cottage Rd, Muskoka', kind: 'cottage', priorities: ['CRITICAL', 'OPPORTUNITY'], notifs: ['push', 'email'], radiusKm: 3.0, lat: 43.7430, lng: -79.5230 },
+];
 
 export default function BeaconApp() {
   const [view, setView] = useState<'map' | 'list' | 'history'>('map');
   const [layers, setLayers] = useState<LayerVisibility>({ CRITICAL: true, URGENT: true, ADVISORY: true, OPPORTUNITY: true });
   const [locations, setLocations] = useState<UserLocation[]>(() => {
     try {
-      const saved = localStorage.getItem('beacon_locations');
-      return saved ? (JSON.parse(saved) as UserLocation[]) : [];
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved) as UserLocation[];
     } catch {
-      return [];
+      // ignore parse / SSR errors
     }
+    return DEFAULT_LOCATIONS;
   });
 
   useEffect(() => {
-    localStorage.setItem('beacon_locations', JSON.stringify(locations));
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(locations)); } catch { /* noop */ }
   }, [locations]);
+
   const [activeAlert, setActiveAlert] = useState<AlertEvent | null>(null);
   const [shareTarget, setShareTarget] = useState<AlertEvent | UserLocation | null>(null);
   const [subOpen, setSubOpen] = useState(false);
   const [subMode, setSubMode] = useState<'create' | 'edit'>('create');
   const [subInitial, setSubInitial] = useState<Omit<UserLocation, 'id' | 'lat' | 'lng'> | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [draftPin, setDraftPin] = useState<DraftPin | null>(null);
-  const [offsetH, setOffsetH] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
 
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(null), 2200); };
@@ -47,6 +56,7 @@ export default function BeaconApp() {
   const startCreate = () => {
     setSubMode('create');
     setSubInitial(null);
+    setEditingId(null);
     setDraftPin(null);
     setSubOpen(true);
     setView('map');
@@ -56,14 +66,15 @@ export default function BeaconApp() {
   const startEdit = (loc: UserLocation) => {
     setSubMode('edit');
     setSubInitial({ name: loc.name, address: loc.address, kind: loc.kind, priorities: loc.priorities, notifs: loc.notifs, radiusKm: loc.radiusKm });
+    setEditingId(loc.id);
     setDraftPin({ lat: loc.lat, lng: loc.lng, radiusKm: loc.radiusKm });
     setSubOpen(true);
     setView('map');
   };
 
   const saveSub = (data: Omit<UserLocation, 'id'>) => {
-    if (subMode === 'edit' && subInitial) {
-      setLocations(L => L.map(l => l.name === subInitial.name ? { ...l, ...data } : l));
+    if (subMode === 'edit' && editingId) {
+      setLocations(L => L.map(l => l.id === editingId ? { ...l, ...data, id: l.id } : l));
       flash('LOCATION UPDATED');
     } else {
       const id = 'L' + (locations.length + 1).toString().padStart(2, '0');
@@ -72,6 +83,7 @@ export default function BeaconApp() {
     }
     setSubOpen(false);
     setDraftPin(null);
+    setEditingId(null);
     setView('list');
   };
 
@@ -118,13 +130,11 @@ export default function BeaconApp() {
           </div>
         )}
 
-        <div className={`watermark ${(sidePanelOpen || showRightCol) ? '' : 'no-right'}`}>
-          STRICTLY CONFIDENTIAL — BEACON.TO / SYSTEM 365
+        <div className={`watermark ${sidePanelOpen ? '' : 'no-right'}`}>
+          STRICTLY CONFIDENTIAL — THE 6 WATCH / SYSTEM 416
         </div>
 
-        <div className="coords">43.6532° N, 79.3832° W · ZOOM 12 · TILE 18.3</div>
-
-        <Scrubber offsetH={offsetH} setOffsetH={setOffsetH} events={SEED_EVENTS} withPanel={sidePanelOpen} />
+        <div className={`coords ${sidePanelOpen ? '' : 'no-right'}`}>43.6532° N, 79.3832° W · ZOOM 12 · TILE 18.3</div>
 
         {subOpen && (
           <SubscribePanel
@@ -132,7 +142,7 @@ export default function BeaconApp() {
             initial={subInitial}
             draft={draftPin}
             setDraft={setDraftPin}
-            onClose={() => { setSubOpen(false); setDraftPin(null); }}
+            onClose={() => { setSubOpen(false); setDraftPin(null); setEditingId(null); }}
             onSave={saveSub}
           />
         )}
@@ -155,7 +165,7 @@ export default function BeaconApp() {
           />
         )}
         {activeAlert && !subOpen && (
-          <AlertDrawer event={activeAlert} onClose={() => setActiveAlert(null)} onShare={setShareTarget} />
+          <AlertDrawer event={activeAlert} locations={locations} onClose={() => setActiveAlert(null)} onShare={setShareTarget} />
         )}
 
         {shareTarget && <ShareModal thing={shareTarget} onClose={() => setShareTarget(null)} />}

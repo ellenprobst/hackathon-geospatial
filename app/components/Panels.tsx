@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { AlertEvent, UserLocation } from '../types';
+import type { AlertEvent, UserLocation, Priority } from '../types';
 import { Icon } from './Icon';
 
 const PRIORITY_CLASS: Record<string, string> = {
@@ -15,6 +15,47 @@ const KIND_OPTIONS = [
   { k: 'school', label: 'SCHOOL', icon: 'school' },
   { k: 'cottage', label: 'COTTAGE', icon: 'cottage' },
 ];
+
+type RecoTier = { immediate: string[]; hour: string[]; before: string[]; optional: string[] };
+
+const RECO_LIB: Record<Priority, Record<string, RecoTier>> = {
+  CRITICAL: {
+    home:    { immediate: ['Close & lock all windows; bring kids/pets indoors.', 'Move car off the street if branches/flooding likely.'], hour: ['Charge phones + power banks now.', 'Fill bathtub if power loss is possible.'], before: ['Move valuables off basement floor.', 'Photograph property for insurance.'], optional: ['Check on elderly neighbours.'] },
+    condo:   { immediate: ['Close balcony doors; stow loose planters & furniture.', 'Stay away from floor-to-ceiling windows.'], hour: ['Charge devices; locate stairwell exit.', 'Fill water bottles in case pumps fail.'], before: ['Unplug non-essential electronics.'], optional: ['Notify your concierge.'] },
+    office:  { immediate: ['Move staff away from glass façade.', 'Lock down loose rooftop or balcony items.'], hour: ['Back up local work to cloud.', 'Identify a shelter-in-place spot.'], before: ['Brief team on early-dismissal trigger.'], optional: ['Coordinate with building security.'] },
+    school:  { immediate: ['Move students to interior rooms; away from windows.', 'Account for everyone — head count.'], hour: ['Hold dismissal until guidance updates.', 'Prepare emergency comms to parents.'], before: ['Brief after-school staff.'], optional: ['Coordinate with TDSB safety line.'] },
+    cottage: { immediate: ['Secure dock lines; pull boat covers.', 'Bring in patio furniture, kayaks, BBQ propane.'], hour: ['Top up generator fuel.', 'Stage flashlights + radio.'], before: ['Photograph shoreline + structures.'], optional: ['Check on neighbours up the road.'] },
+  },
+  URGENT: {
+    home:    { immediate: ['Clear gutters of leaves/debris.', 'Park car somewhere not under trees.'], hour: ['Run sump pump test cycle.', 'Move basement boxes off the floor.'], before: ['Drip cold-water taps if deep freeze.'], optional: ['Stock up on quick groceries.'] },
+    condo:   { immediate: ['Check balcony drains for blockage.', 'Wipe window seals if leaks are an issue.'], hour: ['Charge devices.', 'Stage towels near doors.'], before: ['Plan an alternate commute route.'], optional: ['Notify concierge of leaks.'] },
+    office:  { immediate: ['Share alternate commute options with the team.', 'Check building drainage if at grade-level.'], hour: ['Re-time meetings off the disruption window.'], before: ['Forward office line to mobile.'], optional: ['Order team coffee/lunch in.'] },
+    school:  { immediate: ['Update bus routing & parents.', 'Move recess indoors.'], hour: ['Brief reception about late arrivals.'], before: ['Pre-stage rain gear at exits.'], optional: ['Push update to school app.'] },
+    cottage: { immediate: ['Pull dockside chairs & cushions.', 'Cover firewood pile.'], hour: ['Run a generator check.'], before: ['Clean out the eavestroughs.'], optional: ['Top up groceries from the marina.'] },
+  },
+  ADVISORY: {
+    home:    { immediate: ['Replace HVAC filter if past 60 days.', 'Close windows on the high-pollen side.'], hour: ['Limit outdoor exertion for sensitive folks.'], before: ['Run a HEPA in the bedroom tonight.'], optional: ["Hydrate; saline rinse if you're reactive."] },
+    condo:   { immediate: ['Switch HVAC to recirculate.', 'Shut balcony door.'], hour: ['Wipe down surfaces near vents.'], before: ['Run air purifier overnight.'], optional: ['Stock antihistamines.'] },
+    office:  { immediate: ['Switch HVAC mode; keep doors shut.', 'Reschedule outdoor meetings.'], hour: ['Offer remote-work option to sensitive staff.'], before: ['Add a HEPA to the meeting room.'], optional: ['Send a wellness note.'] },
+    school:  { immediate: ['Move recess indoors.', 'Notify families of children with asthma.'], hour: ['Brief PE staff.'], before: ['Run room HEPAs through dismissal.'], optional: ['Update the school app.'] },
+    cottage: { immediate: ['Skip the burn pile today.', 'Close screens on prevailing-wind side.'], hour: ['Run AC on recirculate.'], before: ['Stage allergy meds.'], optional: ['Reschedule the long paddle.'] },
+  },
+  OPPORTUNITY: {
+    home:    { immediate: ['Water plants deeply this morning.', 'Pull weeds while soil is loose.'], hour: ['Direct-sow tomatoes / peppers / basil.'], before: ['Apply slow-release fertilizer.'], optional: ['Photograph the garden for tracking.'] },
+    condo:   { immediate: ['Water balcony pots — they dry first.', 'Re-pot anything root-bound.'], hour: ['Move heat-lovers into direct sun.'], before: ['Clean balcony drains.'], optional: ['Snip herbs to encourage growth.'] },
+    office:  { immediate: ['Open windows briefly for air exchange.'], hour: ['Walking 1:1s outdoors.'], before: ['Schedule team patio social.'], optional: ['Photograph the courtyard.'] },
+    school:  { immediate: ['Outdoor classroom / nature walk window.', 'Garden club planting session.'], hour: ['Schedule recess outdoors.'], before: ['Plan the field-day rain alternative if weather shifts.'], optional: ['Capture photos for the newsletter.'] },
+    cottage: { immediate: ['Best window to plant or transplant.', 'Shock the pool / open the dock.'], hour: ['Trim shoreline branches.', 'Stain the deck.'], before: ['Set out the rain barrels.'], optional: ['Star-gaze tonight.'] },
+  },
+};
+
+const haversineKm = (a: { lat: number; lng: number }, b: { lat: number; lng: number }) => {
+  const toRad = (d: number) => d * Math.PI / 180;
+  const R = 6371;
+  const dLat = toRad(b.lat - a.lat), dLng = toRad(b.lng - a.lng);
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+};
 
 function ConfBars({ n }: { n: number }) {
   return (
@@ -133,13 +174,53 @@ export function HistoryPanel({ events, onPick, onClose }: HistoryPanelProps) {
 
 interface AlertDrawerProps {
   event: AlertEvent | null;
+  locations?: UserLocation[];
   onClose: () => void;
   onShare: (ev: AlertEvent) => void;
 }
 
-export function AlertDrawer({ event, onClose, onShare }: AlertDrawerProps) {
+type Hit = UserLocation & { km: number };
+
+export function AlertDrawer({ event, locations = [], onClose, onShare }: AlertDrawerProps) {
+  const [done, setDone] = useState<Record<string, boolean>>({});
+  const [snoozed, setSnoozed] = useState(false);
   if (!event) return null;
   const cls = PRIORITY_CLASS[event.priority];
+
+  const hits: Hit[] = locations
+    .map(loc => {
+      const km = haversineKm({ lat: event.lat, lng: event.lng }, { lat: loc.lat, lng: loc.lng });
+      const reach = (event.radiusM || 1000) / 1000 + (loc.radiusKm || 1.5);
+      return km <= reach ? { ...loc, km } : null;
+    })
+    .filter((x): x is Hit => x !== null)
+    .sort((a, b) => a.km - b.km);
+
+  const personaKind = hits[0]?.kind || 'home';
+  const recos = RECO_LIB[event.priority]?.[personaKind] || RECO_LIB[event.priority]?.home || { immediate: [], hour: [], before: [], optional: [] };
+
+  const tier = (key: string, label: string, items: string[]) => {
+    if (!items || !items.length) return null;
+    return (
+      <div style={{ marginBottom: 14 }}>
+        <div className="lbl" style={{ marginBottom: 6, display: 'flex', justifyContent: 'space-between' }}>
+          <span>{label}</span>
+          <span style={{ color: 'var(--muted-2)' }}>{items.filter((_, i) => done[`${key}-${i}`]).length}/{items.length}</span>
+        </div>
+        {items.map((t, i) => {
+          const k = `${key}-${i}`;
+          const on = !!done[k];
+          return (
+            <div key={i} className={`radio-row ${on ? 'on' : ''}`} onClick={() => setDone(d => ({ ...d, [k]: !d[k] }))} style={{ borderBottom: '1px dashed var(--rule-soft)' }}>
+              <span className="box" />
+              <span style={{ flex: 1, fontSize: 12, lineHeight: 1.45, textDecoration: on ? 'line-through' : 'none', textDecorationColor: 'rgba(0,0,0,.35)', color: on ? 'var(--muted)' : 'var(--ink)' }}>{t}</span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <aside className="drawer">
       <div className={`alert-head ${cls}`}>
@@ -148,14 +229,38 @@ export function AlertDrawer({ event, onClose, onShare }: AlertDrawerProps) {
         <div className="when">{event.time?.toUpperCase()} · {event.ttl?.toUpperCase()}</div>
       </div>
       <div className="panel-b">
-        <div className="field">
-          <label>WHAT&apos;S HAPPENING</label>
-          <div style={{ fontFamily: 'var(--sans)', fontSize: 15, lineHeight: 1.5, letterSpacing: '-.005em' }}>{event.plain}</div>
+        <div className="field" style={{ marginBottom: 14 }}>
+          <div style={{ fontFamily: 'var(--sans)', fontSize: 14, lineHeight: 1.5, letterSpacing: '-.005em' }}>{event.plain}</div>
         </div>
-        <div className="field">
-          <label>RECOMMENDED ACTION</label>
-          <div style={{ fontSize: 12, lineHeight: 1.55 }}>{event.action}</div>
+
+        {hits.length > 0 && (
+          <div className="card" style={{ background: 'transparent', marginBottom: 14 }}>
+            <div className="card-h"><span>AFFECTS YOUR LOCATIONS</span><span className="meta">{hits.length} HIT</span></div>
+            <div className="card-b" style={{ padding: '4px 12px' }}>
+              {hits.map(h => (
+                <div key={h.id} className="kv">
+                  <span className="k" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span className="pri-pip" style={{ background: 'var(--ink)' }} />
+                    <span style={{ letterSpacing: '.16em' }}>{h.name}</span>
+                  </span>
+                  <span className="v">{h.km.toFixed(1)} KM AWAY</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="lbl" style={{ marginBottom: 8, display: 'flex', justifyContent: 'space-between' }}>
+          <span>WHAT TO DO</span>
+          <span style={{ color: 'var(--muted-2)' }}>FOR {personaKind.toUpperCase()}</span>
         </div>
+
+        {tier('imm', 'IMMEDIATE', recos.immediate)}
+        {tier('hr', 'WITHIN THE HOUR', recos.hour)}
+        {tier('be', 'BEFORE IT ENDS', recos.before)}
+        {tier('op', 'OPTIONAL', recos.optional)}
+
+        <div className="divider" />
         <div className="card" style={{ background: 'transparent' }}>
           <div className="card-h"><span>SIGNAL DETAIL</span><ConfBars n={event.conf || 3} /></div>
           <div className="card-b">
@@ -163,11 +268,16 @@ export function AlertDrawer({ event, onClose, onShare }: AlertDrawerProps) {
             <div className="kv"><span className="k">SOURCE</span><span className="v">{event.source}</span></div>
             <div className="kv"><span className="k">DETECTED</span><span className="v">{event.time}</span></div>
             <div className="kv"><span className="k">EXPIRES</span><span className="v">{event.ttl}</span></div>
+            <div className="kv"><span className="k">WHY YOU?</span><span className="v" style={{ maxWidth: 200, textAlign: 'right' }}>{hits.length > 0 ? `${hits[0].name} within ${hits[0].km.toFixed(1)} km` : 'In your viewport'}</span></div>
           </div>
         </div>
+
         <div className="divider" />
-        <div className="lbl">SUBSCRIBED LOCATIONS HIT</div>
-        <div className="help">Showing locations within the affected radius.</div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <button className="chip" onClick={() => setSnoozed(s => !s)}>{snoozed ? 'SNOOZED · 1H' : 'SNOOZE 1H'}</button>
+          <button className="chip">SHARE WITH HOUSEHOLD</button>
+          <button className="chip">CALL 311</button>
+        </div>
       </div>
       <div className="panel-f">
         <button className="btn ghost" onClick={onClose}>DISMISS</button>
@@ -185,11 +295,11 @@ interface ShareModalProps {
 export function ShareModal({ thing, onClose }: ShareModalProps) {
   const id = thing ? ('id' in thing ? thing.id : '') : 'X';
   const name = thing ? ('name' in thing ? thing.name : 'event' in thing ? (thing as AlertEvent).event : 'BEACON') : 'BEACON';
-  const url = `https://beacon.to/s/${id.toLowerCase()}-${Math.floor(Math.random() * 9000 + 1000)}`;
+  const url = `https://the6watch.to/s/${id.toLowerCase()}-${Math.floor(Math.random() * 9000 + 1000)}`;
   const [copied, setCopied] = useState(false);
 
   const copy = () => {
-    try { navigator.clipboard.writeText(url); } catch (_) { /* noop */ }
+    try { navigator.clipboard.writeText(url); } catch { /* noop */ }
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
   };

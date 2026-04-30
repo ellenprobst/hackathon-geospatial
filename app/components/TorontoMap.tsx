@@ -50,14 +50,17 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
       const m = L.map(mapEl.current, {
         center: TORONTO_CENTER,
         zoom: DEFAULT_ZOOM,
-        zoomControl: true,
+        zoomControl: false,
         attributionControl: true,
         preferCanvas: true,
       });
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.control.zoom({ position: 'bottomright' }).addTo(m);
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
-        attribution: '© OpenStreetMap contributors',
+        subdomains: 'abcd',
+        attribution: '© OpenStreetMap contributors © CARTO',
       }).addTo(m);
 
       mapRef.current = m;
@@ -126,7 +129,8 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
         {events.map(ev => {
           const { x, y } = project(ev.lat, ev.lng);
           const c = PC[ev.priority];
-          const labelW = ev.event.length * 5.5 + 12;
+          const label = ev.event.toUpperCase();
+          const labelW = label.length * 7.4 + 18;
           return (
             <g key={'p-' + ev.id} className="pin" onClick={e => { e.stopPropagation(); onPickEvent(ev); }}>
               <circle className="ring" cx={x} cy={y} r="16" fill="none" stroke={c} strokeWidth="1.2" opacity=".55" />
@@ -135,8 +139,8 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
               <line x1={x + 6} x2={x + 12} y1={y} y2={y} stroke="#0A0A0A" strokeWidth="1" />
               <line x1={x} x2={x} y1={y - 12} y2={y - 6} stroke="#0A0A0A" strokeWidth="1" />
               <line x1={x} x2={x} y1={y + 6} y2={y + 12} stroke="#0A0A0A" strokeWidth="1" />
-              <rect x={x + 10} y={y - 8} width={labelW} height="14" fill="#0A0A0A" />
-              <text x={x + 15} y={y + 2} fontSize="9" letterSpacing="1.5" fill="#F4F2EE" fontFamily="JetBrains Mono" fontWeight="700">{ev.event.toUpperCase()}</text>
+              <rect x={x + 10} y={y - 9} width={labelW} height="16" fill="#0A0A0A" />
+              <text x={x + 19} y={y + 2.5} fontSize="10" letterSpacing="1.5" fill="#F4F2EE" fontFamily="JetBrains Mono" fontWeight="700">{label}</text>
             </g>
           );
         })}

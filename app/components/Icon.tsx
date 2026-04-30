@@ -17,6 +17,7 @@ export function Icon({ name }: { name: string }) {
     case 'school': return <svg {...common}><path d="M2 9 12 4l10 5-10 5z"/><path d="M6 11v5c2 2 10 2 12 0v-5"/></svg>;
     case 'office': return <svg {...common}><rect x="3" y="6" width="18" height="14"/><path d="M7 10h2M11 10h2M15 10h2M7 14h2M11 14h2M15 14h2"/></svg>;
     case 'cottage': return <svg {...common}><path d="M3 12 12 5l9 7"/><path d="M5 11v9h14v-9"/><path d="M10 20v-5h4v5"/></svg>;
+    case 'pin': return <svg {...common}><path d="M12 22s7-7.5 7-13a7 7 0 1 0-14 0c0 5.5 7 13 7 13z"/><circle cx="12" cy="9" r="2.5"/></svg>;
     case 'play': return <svg {...common}><path d="M8 5v14l11-7z" fill="currentColor"/></svg>;
     case 'pause': return <svg {...common}><rect x="7" y="5" width="3.5" height="14" fill="currentColor"/><rect x="13.5" y="5" width="3.5" height="14" fill="currentColor"/></svg>;
     default: return null;

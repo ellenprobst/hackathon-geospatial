@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "BEACON.TO — Hyper-local awareness, Toronto",
+  title: "THE 6 WATCH — Hyper-local awareness, Toronto",
   description: "Real-time geospatial alerts for the Greater Toronto Area",
 };
 

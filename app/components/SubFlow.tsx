@@ -39,6 +39,39 @@ const SUGGESTED_ADDRESSES = [
   { a: '46 Cottage Rd, Muskoka Lakes, ON', lat: 43.7430, lng: -79.5230 },
 ];
 
+type GeoResult = { label: string; lat: number; lng: number };
+
+const useGeocoder = (query: string) => {
+  const [results, setResults] = useState<GeoResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!query || query.length < 3) { setResults([]); return; }
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      try {
+        setLoading(true);
+        const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=6&lat=43.6532&lon=-79.3832&bbox=-79.65,43.55,-79.10,43.90&lang=en`;
+        const r = await fetch(url, { signal: ctrl.signal });
+        const j = await r.json();
+        const items: GeoResult[] = (j.features || []).map((f: { properties?: Record<string, string>; geometry: { coordinates: [number, number] } }) => {
+          const p = f.properties || {};
+          const [lng, lat] = f.geometry.coordinates;
+          const lineBits = [
+            [p.housenumber, p.street].filter(Boolean).join(' ') || p.name,
+            p.city || p.town || p.village || p.county,
+            p.state, p.country
+          ].filter(Boolean);
+          return { label: lineBits.join(', '), lat, lng };
+        }).filter((x: GeoResult) => x.label);
+        setResults(items);
+      } catch { /* aborted or offline */ }
+      finally { setLoading(false); }
+    }, 280);
+    return () => { ctrl.abort(); clearTimeout(t); };
+  }, [query]);
+  return { results, loading };
+};
+
 type SubData = Omit<UserLocation, 'id' | 'lat' | 'lng'>;
 
 interface SubscribePanelProps {
@@ -88,6 +121,15 @@ export function SubscribePanel({ mode = 'create', initial, draft, setDraft, onCl
   const next = () => setStep(s => Math.min(4, s + 1));
   const back = () => setStep(s => Math.max(1, s - 1));
 
+  const [acOpen, setAcOpen] = useState(false);
+  const { results: geoResults, loading: geoLoading } = useGeocoder(d.address);
+  const acVisible = acOpen && d.address.length >= 3 && (geoResults.length > 0 || geoLoading);
+  const pickGeoResult = (g: GeoResult) => {
+    setD({ ...d, address: g.label });
+    setDraft({ lat: g.lat, lng: g.lng, radiusKm: d.radiusKm });
+    setAcOpen(false);
+  };
+
   return (
     <aside className="panel">
       <div className="panel-h">
@@ -103,8 +145,37 @@ export function SubscribePanel({ mode = 'create', initial, draft, setDraft, onCl
           <>
             <div className="field">
               <label>ADDRESS</label>
-              <input className="input" placeholder="Type or paste an address…" value={d.address} onChange={e => setD({ ...d, address: e.target.value })} />
-              <div className="help">Click anywhere on the map to drop a pin, or pick a suggestion below.</div>
+              <div style={{ position: 'relative' }}>
+                <input className="input" placeholder="Type or paste an address…"
+                  value={d.address}
+                  onChange={e => { setD({ ...d, address: e.target.value }); setAcOpen(true); }}
+                  onFocus={() => setAcOpen(true)}
+                  onBlur={() => {
+                    setTimeout(() => setAcOpen(false), 180);
+                    if (d.address && !draft) {
+                      // fallback pseudo-geocode if user typed but never picked a real result
+                      let h = 0;
+                      for (let i = 0; i < d.address.length; i++) h = (h * 31 + d.address.charCodeAt(i)) >>> 0;
+                      const lat = 43.62 + ((h % 1000) / 1000) * 0.10;
+                      const lng = -79.45 + (((h >> 10) % 1000) / 1000) * 0.13;
+                      setDraft({ lat, lng, radiusKm: d.radiusKm });
+                    }
+                  }} />
+                {acVisible && (
+                  <div className="ac-pop">
+                    {geoLoading && geoResults.length === 0 && (
+                      <div className="ac-row ac-loading">SEARCHING…</div>
+                    )}
+                    {geoResults.map((g, i) => (
+                      <div key={i} className="ac-row" onMouseDown={e => { e.preventDefault(); pickGeoResult(g); }}>
+                        <Icon name="pin" />
+                        <span className="ac-label">{g.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="help">Start typing — we&apos;ll search real addresses live. Or click the map to drop a pin.</div>
             </div>
             <div className="field">
               <label>SUGGESTED</label>

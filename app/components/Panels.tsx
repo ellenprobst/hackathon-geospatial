@@ -273,7 +273,10 @@ export function HistoryPanel({ events, onPick, onClose }: HistoryPanelProps) {
               <div className={`pri-bar ${PRIORITY_CLASS[it.priority]}`} />
               <div className="when">{it.time?.toUpperCase()}</div>
               <div>
-                <div style={{ fontWeight: 700, fontFamily: 'var(--sans)', fontSize: 13, letterSpacing: '-.005em', textDecoration: it.resolved ? 'line-through' : 'none', textDecorationColor: 'rgba(0,0,0,.25)' }}>{it.event}</div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span style={{ fontWeight: 700, fontFamily: 'var(--sans)', fontSize: 13, letterSpacing: '-.005em', textDecoration: it.resolved ? 'line-through' : 'none', textDecorationColor: 'rgba(0,0,0,.25)' }}>{it.event}</span>
+                  {it.resolved && <span style={{ fontSize: 9, fontFamily: 'var(--sans)', fontWeight: 600, letterSpacing: '.12em', color: 'var(--muted)', background: 'var(--rule-soft)', borderRadius: 3, padding: '1px 5px', flexShrink: 0 }}>EXPIRED</span>}
+                </div>
                 <div style={{ fontSize: 10, color: 'var(--muted)', letterSpacing: '.06em', marginTop: 2 }}>{it.area} · {it.source}</div>
               </div>
               <div className="arrow">›</div>

@@ -456,7 +456,6 @@ interface LocationDrawerProps {
 type LocationHit = AlertEvent & { km: number };
 
 export function LocationDrawer({ location, events, onClose, onEdit, onDelete, onShare, onPickEvent }: LocationDrawerProps) {
-  console.log('[LocationDrawer] rendering', location?.id, location?.name);
   if (!location) return null;
 
   const hits: LocationHit[] = (events || [])

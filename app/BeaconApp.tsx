@@ -213,7 +213,6 @@ export default function BeaconApp() {
   }
 
   const focusLoc = (loc: UserLocation) => {
-    console.log('[focusLoc] called for', loc.id, loc.name)
     setView('map')
     setFocusTarget({ lat: loc.lat, lng: loc.lng, zoom: 14, ts: Date.now() })
     setActiveAlert(null)
@@ -221,7 +220,6 @@ export default function BeaconApp() {
     setActiveLoc(loc)
   }
 
-  console.log('[render]', { view, subOpen, activeAlert: !!activeAlert, activeLoc: activeLoc?.id ?? null })
   const showRightCol = view === 'map' && !subOpen && !activeAlert && !activeLoc
   const sidePanelOpen =
     subOpen ||

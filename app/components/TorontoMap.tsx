@@ -167,6 +167,18 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
           ))}
         </defs>
 
+        {/* Location radius circles — rendered first so event pins sit above them */}
+        {locations.map(loc => {
+          const { x, y } = project(loc.lat, loc.lng);
+          const r = Math.max(40, metersToPx((loc.radiusKm || 1.5) * 1000, loc.lat));
+          return (
+            <circle key={'lc-' + loc.id} cx={x} cy={y} r={r}
+              fill="rgba(10,10,10,.04)" stroke="#0A0A0A" strokeWidth="1"
+              strokeDasharray="3 3" opacity=".75" style={{ pointerEvents: 'none' }}
+            />
+          );
+        })}
+
         <g style={{ mixBlendMode: 'multiply' }}>
           {events.map(ev => {
             const { x, y } = project(ev.lat, ev.lng);
@@ -200,12 +212,11 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
           );
         })}
 
+        {/* Location marker icons — rendered after event pins so they stay visible */}
         {locations.map(loc => {
           const { x, y } = project(loc.lat, loc.lng);
-          const r = Math.max(40, metersToPx((loc.radiusKm || 1.5) * 1000, loc.lat));
           return (
             <g key={'l-' + loc.id} className="pin" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); onPickLocation(loc); }}>
-              <circle cx={x} cy={y} r={r} fill="rgba(10,10,10,.04)" stroke="#0A0A0A" strokeWidth="1" strokeDasharray="3 3" opacity=".75" />
               <rect x={x - 8} y={y - 8} width="16" height="16" fill="#F4F2EE" stroke="#0A0A0A" strokeWidth="1.4" />
               <rect x={x - 3} y={y - 3} width="6" height="6" fill="#0A0A0A" />
               <LocationLabel x={x} y={y} name={(loc.name ?? '').toUpperCase()} />

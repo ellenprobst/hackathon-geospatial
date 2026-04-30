@@ -28,14 +28,19 @@ export default function BeaconApp() {
   const [locationsHydrated, setLocationsHydrated] = useState(false);
 
   useEffect(() => {
+    const mergeDefaults = (saved: UserLocation[]) => {
+      const ids = new Set(saved.map(l => l.id));
+      const missing = DEFAULT_LOCATIONS.filter(d => !ids.has(d.id));
+      return missing.length ? [...saved, ...missing] : saved;
+    };
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        setLocations(JSON.parse(saved) as UserLocation[]);
+        setLocations(mergeDefaults(JSON.parse(saved) as UserLocation[]));
       } else {
         const legacy = localStorage.getItem('beacon_locations');
         if (legacy) {
-          setLocations(JSON.parse(legacy) as UserLocation[]);
+          setLocations(mergeDefaults(JSON.parse(legacy) as UserLocation[]));
           localStorage.removeItem('beacon_locations');
         }
       }

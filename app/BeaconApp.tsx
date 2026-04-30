@@ -15,6 +15,7 @@ import { TorontoMap } from './components/TorontoMap'
 import {
   AlertDrawer,
   HistoryPanel,
+  LocationDrawer,
   LocationsPanel,
   ShareModal,
 } from './components/Panels'
@@ -126,6 +127,7 @@ export default function BeaconApp() {
 
   const [activeAlert, setActiveAlert] = useState<AlertEvent | null>(null)
   const [alertSource, setAlertSource] = useState<'history' | null>(null)
+  const [activeLoc, setActiveLoc] = useState<UserLocation | null>(null)
   const [shareTarget, setShareTarget] = useState<
     AlertEvent | UserLocation | null
   >(null)
@@ -169,6 +171,7 @@ export default function BeaconApp() {
     setSubOpen(true)
     setView('map')
     setActiveAlert(null)
+    setActiveLoc(null)
   }
 
   const startEdit = (loc: UserLocation) => {
@@ -210,14 +213,22 @@ export default function BeaconApp() {
   }
 
   const focusLoc = (loc: UserLocation) => {
+    console.log('[focusLoc] called for', loc.id, loc.name)
     setView('map')
     setFocusTarget({ lat: loc.lat, lng: loc.lng, zoom: 14, ts: Date.now() })
-    flash('FOCUSED — ' + loc.name)
+    setActiveAlert(null)
+    setSubOpen(false)
+    setActiveLoc(loc)
   }
 
-  const showRightCol = view === 'map' && !subOpen && !activeAlert
+  console.log('[render]', { view, subOpen, activeAlert: !!activeAlert, activeLoc: activeLoc?.id ?? null })
+  const showRightCol = view === 'map' && !subOpen && !activeAlert && !activeLoc
   const sidePanelOpen =
-    subOpen || view === 'list' || view === 'history' || !!activeAlert
+    subOpen ||
+    view === 'list' ||
+    view === 'history' ||
+    !!activeAlert ||
+    !!activeLoc
 
   return (
     <div className='app'>
@@ -227,6 +238,7 @@ export default function BeaconApp() {
           setView(v as typeof view)
           setActiveAlert(null)
           setAlertSource(null)
+          setActiveLoc(null)
           setSubOpen(false)
         }}
         onAdd={startCreate}
@@ -243,6 +255,7 @@ export default function BeaconApp() {
           onPickEvent={(ev) => {
             setActiveAlert(ev)
             setAlertSource(null)
+            setActiveLoc(null)
             setSubOpen(false)
             setView('map')
           }}
@@ -312,15 +325,55 @@ export default function BeaconApp() {
         )}
         {activeAlert && !subOpen && (
           <>
-            <button className="drawer-close" onClick={() => { setActiveAlert(null); setAlertSource(null); }} aria-label="Close"><Icon name="close" /></button>
+            <button
+              className='drawer-close'
+              onClick={() => {
+                setActiveAlert(null)
+                setAlertSource(null)
+              }}
+              aria-label='Close'
+            >
+              <Icon name='close' />
+            </button>
             <AlertDrawer
               event={activeAlert}
               locations={locations}
-              onClose={() => { setActiveAlert(null); setAlertSource(null); }}
-              onBack={alertSource === 'history' ? () => { setActiveAlert(null); setAlertSource(null); setView('history'); } : undefined}
+              onClose={() => {
+                setActiveAlert(null)
+                setAlertSource(null)
+              }}
+              onBack={
+                alertSource === 'history'
+                  ? () => {
+                      setActiveAlert(null)
+                      setAlertSource(null)
+                      setView('history')
+                    }
+                  : undefined
+              }
               onShare={setShareTarget}
             />
           </>
+        )}
+        {activeLoc && !subOpen && !activeAlert && (
+          <LocationDrawer
+            location={activeLoc}
+            events={visibleEvents}
+            onClose={() => setActiveLoc(null)}
+            onEdit={(loc) => {
+              setActiveLoc(null)
+              startEdit(loc)
+            }}
+            onDelete={(loc) => {
+              deleteLoc(loc)
+              setActiveLoc(null)
+            }}
+            onShare={setShareTarget}
+            onPickEvent={(ev) => {
+              setActiveLoc(null)
+              setActiveAlert(ev)
+            }}
+          />
         )}
 
         {shareTarget && (

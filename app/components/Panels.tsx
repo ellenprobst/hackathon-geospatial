@@ -425,6 +425,168 @@ export function AlertDrawer({ event, locations = [], onClose, onBack, onShare }:
   );
 }
 
+type LocationStatus = 'CRITICAL' | 'ATTENTION' | 'ADVISORY' | 'ALL CLEAR';
+
+const KIND_LABEL: Record<string, string> = {
+  home: 'HOME', condo: 'CONDO', office: 'OFFICE', school: 'SCHOOL', cottage: 'COTTAGE',
+};
+
+const PRIORITY_ORDER: Record<Priority, number> = {
+  CRITICAL: 0, URGENT: 1, ADVISORY: 2, OPPORTUNITY: 3,
+};
+
+const PRIORITY_DOT: Record<Priority, string> = {
+  CRITICAL: '#E84B3C', URGENT: '#E89B3C', ADVISORY: '#9C9286', OPPORTUNITY: '#5A7A4F',
+};
+
+const STATUS_COLOR: Record<LocationStatus, string> = {
+  CRITICAL: '#E84B3C', ATTENTION: '#E89B3C', ADVISORY: '#9C9286', 'ALL CLEAR': '#5A7A4F',
+};
+
+interface LocationDrawerProps {
+  location: UserLocation;
+  events: AlertEvent[];
+  onClose: () => void;
+  onEdit: (loc: UserLocation) => void;
+  onDelete: (loc: UserLocation) => void;
+  onShare: (loc: UserLocation) => void;
+  onPickEvent: (ev: AlertEvent) => void;
+}
+
+type LocationHit = AlertEvent & { km: number };
+
+export function LocationDrawer({ location, events, onClose, onEdit, onDelete, onShare, onPickEvent }: LocationDrawerProps) {
+  console.log('[LocationDrawer] rendering', location?.id, location?.name);
+  if (!location) return null;
+
+  const hits: LocationHit[] = (events || [])
+    .map(ev => {
+      const km = haversineKm({ lat: ev.lat, lng: ev.lng }, { lat: location.lat, lng: location.lng });
+      const reach = (ev.radiusM || 1000) / 1000 + (location.radiusKm || 1.5);
+      return km <= reach ? { ...ev, km } : null;
+    })
+    .filter((x): x is LocationHit => x !== null)
+    .sort((a, b) => (PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]) || (a.km - b.km));
+
+  const status: LocationStatus = hits.some(h => h.priority === 'CRITICAL') ? 'CRITICAL'
+    : hits.some(h => h.priority === 'URGENT') ? 'ATTENTION'
+    : hits.length > 0 ? 'ADVISORY'
+    : 'ALL CLEAR';
+  const statusColor = STATUS_COLOR[status];
+
+  return (
+    <aside className="loc-drawer">
+      <div className="loc-head">
+        <div className="loc-head-top">
+          <div className="loc-tag">DOSSIER · {(location.id || '').toUpperCase()}</div>
+          <button className="x-btn" onClick={onClose}><Icon name="close" /></button>
+        </div>
+        <div className="loc-hero">
+          <div className="loc-scope">
+            <svg viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="38" fill="none" stroke="#0A0A0A" strokeWidth=".8" />
+              <circle cx="40" cy="40" r="28" fill="none" stroke="#0A0A0A" strokeWidth=".4" strokeDasharray="2 3" />
+              <circle cx="40" cy="40" r="18" fill="none" stroke="#0A0A0A" strokeWidth=".4" strokeDasharray="2 3" />
+              <line x1="40" y1="2" x2="40" y2="78" stroke="#0A0A0A" strokeWidth=".4" />
+              <line x1="2" y1="40" x2="78" y2="40" stroke="#0A0A0A" strokeWidth=".4" />
+              {hits.slice(0, 8).map((h, i) => {
+                const ang = (i / Math.max(hits.length, 1)) * Math.PI * 2;
+                const reach = location.radiusKm || 1.5;
+                const r = Math.min(36, 8 + (h.km / reach) * 28);
+                const x = 40 + Math.cos(ang) * r;
+                const y = 40 + Math.sin(ang) * r;
+                return <circle key={h.id} cx={x} cy={y} r="2.4" fill={PRIORITY_DOT[h.priority]} />;
+              })}
+              <circle cx="40" cy="40" r="3" fill="#0A0A0A" />
+              <circle cx="40" cy="40" r="6" fill="none" stroke="#0A0A0A" strokeWidth=".6" />
+            </svg>
+          </div>
+          <div className="loc-id">
+            <div className="loc-kind">
+              <Icon name={location.kind || 'pin'} />
+              <span>{KIND_LABEL[location.kind] || 'PIN'}</span>
+            </div>
+            <div className="loc-name">{location.name}</div>
+            <div className="loc-addr">{location.address || '—'}</div>
+          </div>
+        </div>
+        <div className="loc-status-bar">
+          <span className="loc-status-pip" style={{ background: statusColor }} />
+          <span className="loc-status-txt">{status}</span>
+          <span className="loc-status-meta">{hits.length} ACTIVE · {(location.radiusKm || 1.5).toFixed(1)} KM RADIUS</span>
+        </div>
+      </div>
+
+      <div className="panel-b">
+        <div className="loc-spec">
+          <div className="loc-spec-row">
+            <div className="k">COORDS</div>
+            <div className="v">{location.lat?.toFixed(4)}, {location.lng?.toFixed(4)}</div>
+          </div>
+          <div className="loc-spec-row">
+            <div className="k">RADIUS</div>
+            <div className="v">{(location.radiusKm || 1.5).toFixed(1)} KM</div>
+          </div>
+          <div className="loc-spec-row">
+            <div className="k">PRIORITIES</div>
+            <div className="v">{(location.priorities || []).map(p => (
+              <span key={p} className={`pri-tag ${PRIORITY_CLASS[p]}`}>{p}</span>
+            ))}</div>
+          </div>
+          <div className="loc-spec-row">
+            <div className="k">CHANNELS</div>
+            <div className="v">{(location.notifs || []).map(n => (
+              <span key={n} className="ch-tag">{n.toUpperCase()}</span>
+            ))}</div>
+          </div>
+        </div>
+
+        <div className="lbl loc-section-h">
+          <span>SIGNALS IN RANGE</span>
+          <span className="loc-section-meta">{hits.length} HIT</span>
+        </div>
+
+        {hits.length === 0 ? (
+          <div className="loc-empty">
+            <div className="loc-empty-circle">
+              <svg viewBox="0 0 40 40" width="40" height="40">
+                <circle cx="20" cy="20" r="18" fill="none" stroke="#5A7A4F" strokeWidth="1.2" />
+                <path d="M13 20l5 5 9-10" fill="none" stroke="#5A7A4F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div className="loc-empty-h">ALL CLEAR</div>
+            <div className="loc-empty-b">Nothing active within range. Listening on {(location.priorities || []).length} priorities.</div>
+          </div>
+        ) : (
+          <div className="loc-hits">
+            {hits.map(h => (
+              <button key={h.id} className={`loc-hit ${PRIORITY_CLASS[h.priority]}`} onClick={() => onPickEvent(h)}>
+                <span className="loc-hit-bar" />
+                <div className="loc-hit-body">
+                  <div className="loc-hit-h">
+                    <span className="loc-hit-pri">{h.priority}</span>
+                    <span className="loc-hit-km">{h.km.toFixed(1)} KM</span>
+                  </div>
+                  <div className="loc-hit-ev">{h.event}</div>
+                  <div className="loc-hit-time">{h.time} · {h.ttl}</div>
+                </div>
+                <span className="loc-hit-arrow">→</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="loc-foot">
+        <button className="loc-foot-btn" onClick={() => onShare(location)}><Icon name="share" /><span>SHARE</span></button>
+        <button className="loc-foot-btn">MUTE 24H</button>
+        <button className="loc-foot-btn" onClick={() => onDelete(location)}><Icon name="trash" /><span>DELETE</span></button>
+        <button className="loc-foot-btn primary" onClick={() => onEdit(location)}><Icon name="edit" /><span>EDIT</span></button>
+      </div>
+    </aside>
+  );
+}
+
 interface ShareModalProps {
   thing: AlertEvent | UserLocation | null;
   onClose: () => void;

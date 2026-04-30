@@ -49,18 +49,6 @@ export function Inspector({ events, layers, setLayers }: InspectorProps) {
           </div>
         </div>
       </div>
-
-      <div className="card">
-        <div className="card-h"><span>FEED SOURCES</span><span className="meta">SYNCED 12s</span></div>
-        <div className="card-b source-list">
-          <div className="s"><span>ENVIRONMENT CANADA</span><span>OK</span></div>
-          <div className="s"><span>TORONTO OEM</span><span>OK</span></div>
-          <div className="s"><span>TPS — INCIDENTS</span><span>OK</span></div>
-          <div className="s"><span>TTC SERVICE</span><span>OK</span></div>
-          <div className="s"><span>AQHI / OPA</span><span>OK</span></div>
-          <div className="s"><span>GARDENSENSE</span><span>BETA</span></div>
-        </div>
-      </div>
     </>
   );
 }

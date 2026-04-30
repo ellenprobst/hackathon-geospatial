@@ -130,10 +130,10 @@ export function LocationsPanel({ locations, onPick, onEdit, onDelete, onShare, o
 }
 
 const HISTORY_EXTRA: AlertEvent[] = [
-  { id: 'H01', priority: 'ADVISORY', event: 'Smog Watch lifted', action: '', plain: 'Air quality back to normal across midtown.', lat: 0, lng: 0, radiusM: 0, time: '4h ago', area: 'Midtown', source: 'AQHI', conf: 3, ttl: '', resolved: true },
-  { id: 'H02', priority: 'URGENT', event: 'Line 1 — signal issue', action: '', plain: 'Subway delays cleared at Bloor-Yonge.', lat: 0, lng: 0, radiusM: 0, time: '9h ago', area: 'Line 1 — Yonge', source: 'TTC', conf: 3, ttl: '', resolved: true },
-  { id: 'H03', priority: 'CRITICAL', event: 'Tornado watch — ended', action: '', plain: 'Tornado watch was lifted overnight.', lat: 0, lng: 0, radiusM: 0, time: '14h ago', area: 'GTA West', source: 'EC', conf: 3, ttl: '', resolved: true },
-  { id: 'H04', priority: 'OPPORTUNITY', event: 'Stargazing window', action: '', plain: 'Clear skies + new moon last night.', lat: 0, lng: 0, radiusM: 0, time: '22h ago', area: 'GTA', source: 'GardenSense', conf: 2, ttl: '', resolved: true },
+  { id: 'H01', priority: 'ADVISORY', event: 'Smog Watch lifted', action: '', plain: 'Air quality back to normal across midtown.', lat: 0, lng: 0, radiusM: 0, time: '4h ago', area: 'Midtown', source: 'Environment Canada', conf: 3, ttl: '', resolved: true },
+  { id: 'H02', priority: 'URGENT', event: 'Line 1 — signal issue', action: '', plain: 'Subway delays cleared at Bloor-Yonge.', lat: 0, lng: 0, radiusM: 0, time: '9h ago', area: 'Line 1 — Yonge', source: 'TTC Service Alerts', conf: 3, ttl: '', resolved: true },
+  { id: 'H03', priority: 'CRITICAL', event: 'Tornado watch — ended', action: '', plain: 'Tornado watch was lifted overnight.', lat: 0, lng: 0, radiusM: 0, time: '14h ago', area: 'GTA West', source: 'Environment Canada', conf: 3, ttl: '', resolved: true },
+  { id: 'H04', priority: 'OPPORTUNITY', event: 'Stargazing window', action: '', plain: 'Clear skies + new moon last night.', lat: 0, lng: 0, radiusM: 0, time: '22h ago', area: 'GTA', source: 'Environment Canada', conf: 2, ttl: '', resolved: true },
 ];
 
 interface HistoryPanelProps {
@@ -142,20 +142,91 @@ interface HistoryPanelProps {
   onClose: () => void;
 }
 
+const PRIORITIES: Priority[] = ['CRITICAL', 'URGENT', 'ADVISORY', 'OPPORTUNITY'];
+const PRI_SHORT: Record<string, string> = { CRITICAL: 'CRIT', URGENT: 'URGENT', ADVISORY: 'ADVIS', OPPORTUNITY: 'OPP' };
+const PRI_DOT: Record<string, string> = { CRITICAL: 'crit', URGENT: 'urg', ADVISORY: 'adv', OPPORTUNITY: 'opp' };
+const SOURCE_ABBR: Record<string, string> = {
+  'Toronto Fire': 'FIRE',
+  '511 Ontario': 'TRAFFIC',
+  'Toronto Police': 'POLICE',
+  'TTC Service Alerts': 'TRANSIT',
+  'Environment Canada': 'WEATHER',
+};
+
 export function HistoryPanel({ events, onPick, onClose }: HistoryPanelProps) {
   const items = [...events, ...HISTORY_EXTRA];
+
+  const [priFilter, setPriFilter] = useState<Set<Priority>>(new Set());
+  const [srcFilter, setSrcFilter] = useState<Set<string>>(new Set());
+  const [hideResolved, setHideResolved] = useState(false);
+
+  const allSources = Array.from(new Set(items.map(it => it.source))).sort();
+
+  const togglePri = (p: Priority) => setPriFilter(prev => {
+    const next = new Set(prev);
+    next.has(p) ? next.delete(p) : next.add(p);
+    return next;
+  });
+
+  const toggleSrc = (s: string) => setSrcFilter(prev => {
+    const next = new Set(prev);
+    next.has(s) ? next.delete(s) : next.add(s);
+    return next;
+  });
+
+  const filtered = items.filter(it => {
+    if (priFilter.size > 0 && !priFilter.has(it.priority)) return false;
+    if (srcFilter.size > 0 && !srcFilter.has(it.source)) return false;
+    if (hideResolved && it.resolved) return false;
+    return true;
+  });
+
   return (
     <aside className="panel">
       <div className="panel-h">
         <div>
           <div className="ttl">NOTIFICATION HISTORY</div>
-          <div className="step">LAST 24H · {items.length} EVENTS</div>
+          <div className="step">
+            LAST 24H · {filtered.length}{filtered.length !== items.length ? `/${items.length}` : ''} EVENTS
+          </div>
         </div>
         <button className="x-btn" onClick={onClose}><Icon name="close" /></button>
       </div>
+      <div className="hist-filters">
+        <div className="hist-filter-label">PRIORITY</div>
+        <div className="hist-filter-row">
+          {PRIORITIES.map(p => (
+            <button key={p} className={`chip${priFilter.has(p) ? ' on' : ''}`} onClick={() => togglePri(p)}>
+              <span className={`dot ${PRI_DOT[p]}`} />
+              {PRI_SHORT[p]}
+            </button>
+          ))}
+        </div>
+        <div className="hist-filter-label" style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between' }}>
+          <span>SOURCE</span>
+          <button
+            className={`chip${hideResolved ? ' on' : ''}`}
+            onClick={() => setHideResolved(s => !s)}
+            style={{ padding: '2px 7px', fontSize: 9 }}
+          >
+            ACTIVE ONLY
+          </button>
+        </div>
+        <div className="hist-filter-row">
+          {allSources.map(s => (
+            <button key={s} className={`chip${srcFilter.has(s) ? ' on' : ''}`} onClick={() => toggleSrc(s)}>
+              {SOURCE_ABBR[s] ?? s}
+            </button>
+          ))}
+        </div>
+      </div>
       <div className="panel-b" style={{ padding: 0 }}>
         <div className="hist">
-          {items.map(it => (
+          {filtered.length === 0 ? (
+            <div style={{ padding: '24px 20px', color: 'var(--muted)', fontSize: 11, letterSpacing: '.1em' }}>
+              NO EVENTS MATCH FILTERS.
+            </div>
+          ) : filtered.map(it => (
             <div key={it.id} className="hist-row" onClick={() => onPick(it)}>
               <div className={`pri-bar ${PRIORITY_CLASS[it.priority]}`} />
               <div className="when">{it.time?.toUpperCase()}</div>

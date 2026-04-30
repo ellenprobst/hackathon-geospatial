@@ -188,6 +188,10 @@ input,select,textarea{font-family:inherit;font-size:inherit;}
 .alert-head .when{font-size:10px;letter-spacing:.18em;margin-top:6px;opacity:.85;}
 
 /* HISTORY */
+.hist-filters{padding:10px 12px 12px;border-bottom:1px solid var(--rule-soft);}
+.hist-filter-label{font-size:9px;letter-spacing:.2em;color:var(--muted);margin-bottom:5px;}
+.hist-filter-row{display:flex;gap:6px;overflow-x:auto;flex-wrap:nowrap;-ms-overflow-style:none;scrollbar-width:none;}
+.hist-filter-row::-webkit-scrollbar{display:none;}
 .hist{display:flex;flex-direction:column;}
 .hist-row{display:grid;grid-template-columns:8px 70px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--rule-soft);font-size:11px;cursor:pointer;}
 .hist-row:hover{background:rgba(0,0,0,.03);}

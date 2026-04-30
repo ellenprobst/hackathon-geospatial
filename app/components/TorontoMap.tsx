@@ -91,6 +91,39 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
     mapRef.current.flyTo([focusTarget.lat, focusTarget.lng], focusTarget.zoom ?? 14, { duration: 0.8 });
   }, [focusTarget]);
 
+  // Forward wheel events (incl. Mac trackpad pinch = wheel + ctrlKey) from SVG overlay
+  // pins/blooms onto the Leaflet container, so the map zooms instead of the browser.
+  useEffect(() => {
+    const svg = overlayEl.current;
+    const base = mapEl.current;
+    if (!svg || !base) return;
+
+    const handler = (e: WheelEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const synth = new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        deltaX: e.deltaX,
+        deltaY: e.deltaY,
+        deltaZ: e.deltaZ,
+        deltaMode: e.deltaMode,
+        clientX: e.clientX,
+        clientY: e.clientY,
+        screenX: e.screenX,
+        screenY: e.screenY,
+        ctrlKey: e.ctrlKey,
+        shiftKey: e.shiftKey,
+        altKey: e.altKey,
+        metaKey: e.metaKey,
+      });
+      base.dispatchEvent(synth);
+    };
+
+    svg.addEventListener('wheel', handler, { passive: false });
+    return () => svg.removeEventListener('wheel', handler);
+  }, []);
+
   const project = (lat: number, lng: number) => {
     if (!mapRef.current) return { x: 0, y: 0 };
     const p = mapRef.current.latLngToContainerPoint([lat, lng]);
@@ -154,7 +187,7 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
         {locations.map(loc => {
           const { x, y } = project(loc.lat, loc.lng);
           const r = Math.max(40, metersToPx((loc.radiusKm || 1.5) * 1000, loc.lat));
-          const labelW = (loc.name?.length || 4) * 6.5 + 12;
+          const labelW = (loc.name?.length || 4) * 8 + 16;
           return (
             <g key={'l-' + loc.id} className="pin" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); onPickLocation(loc); }}>
               <circle cx={x} cy={y} r={r} fill="rgba(10,10,10,.04)" stroke="#0A0A0A" strokeWidth="1" strokeDasharray="3 3" opacity=".75" />

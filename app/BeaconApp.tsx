@@ -17,24 +17,36 @@ const DEFAULT_LOCATIONS: UserLocation[] = [
   { id: 'L01', name: 'HOME', address: '64 Brunswick Ave, Toronto', kind: 'home', priorities: ['CRITICAL', 'URGENT', 'ADVISORY'], notifs: ['push', 'sms'], radiusKm: 1.5, lat: 43.6650, lng: -79.4065 },
   { id: 'L02', name: 'OFFICE', address: '88 Queen St E, Toronto', kind: 'office', priorities: ['URGENT', 'ADVISORY'], notifs: ['email', 'desktop'], radiusKm: 1.0, lat: 43.6537, lng: -79.3760 },
   { id: 'L03', name: 'COTTAGE', address: '46 Cottage Rd, Muskoka', kind: 'cottage', priorities: ['CRITICAL', 'OPPORTUNITY'], notifs: ['push', 'email'], radiusKm: 3.0, lat: 43.7430, lng: -79.5230 },
+  { id: 'L04', name: "CALUM'S HOUSE", address: '120 Atlantic Ave, Toronto, ON M6K 1X9', kind: 'home', priorities: ['CRITICAL', 'URGENT', 'ADVISORY'], notifs: ['push', 'sms'], radiusKm: 0.5, lat: 43.6388, lng: -79.4203 },
+  { id: 'L05', name: "NICO'S HOUSE", address: '125 Western Battery Rd, Toronto', kind: 'home', priorities: ['CRITICAL', 'URGENT', 'ADVISORY'], notifs: ['push', 'sms'], radiusKm: 0.5, lat: 43.6378, lng: -79.4173 },
 ];
 
 export default function BeaconApp() {
   const [view, setView] = useState<'map' | 'list' | 'history'>('map');
   const [layers, setLayers] = useState<LayerVisibility>({ CRITICAL: true, URGENT: true, ADVISORY: true, OPPORTUNITY: true });
-  const [locations, setLocations] = useState<UserLocation[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved) as UserLocation[];
-    } catch {
-      // ignore parse / SSR errors
-    }
-    return DEFAULT_LOCATIONS;
-  });
+  const [locations, setLocations] = useState<UserLocation[]>(DEFAULT_LOCATIONS);
+  const [locationsHydrated, setLocationsHydrated] = useState(false);
 
   useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        setLocations(JSON.parse(saved) as UserLocation[]);
+      } else {
+        const legacy = localStorage.getItem('beacon_locations');
+        if (legacy) {
+          setLocations(JSON.parse(legacy) as UserLocation[]);
+          localStorage.removeItem('beacon_locations');
+        }
+      }
+    } catch { /* noop */ }
+    setLocationsHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!locationsHydrated) return;
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(locations)); } catch { /* noop */ }
-  }, [locations]);
+  }, [locations, locationsHydrated]);
 
   const [activeAlert, setActiveAlert] = useState<AlertEvent | null>(null);
   const [shareTarget, setShareTarget] = useState<AlertEvent | UserLocation | null>(null);

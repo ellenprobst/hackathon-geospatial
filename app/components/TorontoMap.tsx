@@ -47,10 +47,12 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
 
   useEffect(() => {
     if (!mapEl.current || mapRef.current) return;
+    let cancelled = false;
     let L: typeof import('leaflet');
     let cleanup: (() => void) | undefined;
 
     import('leaflet').then(mod => {
+      if (cancelled || !mapEl.current || mapRef.current) return;
       L = mod.default ?? mod;
 
       // Leaflet default icon fix for webpack bundlers
@@ -62,7 +64,6 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       });
 
-      if (!mapEl.current) return;
       const m = L.map(mapEl.current, {
         center: TORONTO_CENTER,
         zoom: DEFAULT_ZOOM,
@@ -97,7 +98,7 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
       cleanup = () => { ro.disconnect(); m.remove(); mapRef.current = null; };
     });
 
-    return () => cleanup?.();
+    return () => { cancelled = true; cleanup?.(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

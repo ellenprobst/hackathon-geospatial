@@ -52,13 +52,13 @@ const DEFAULT_LOCATIONS: UserLocation[] = [
   {
     id: 'L02',
     name: 'OFFICE',
-    address: '88 Queen St E, Toronto',
+    address: '292 Adelaide St W, Toronto, ON M5V 0P3',
     kind: 'office',
     priorities: ['URGENT', 'ADVISORY'],
     notifs: ['email', 'desktop'],
     radiusKm: 1.0,
-    lat: 43.6537,
-    lng: -79.376,
+    lat: 43.6481,
+    lng: -79.3945,
   },
   {
     id: 'L03',

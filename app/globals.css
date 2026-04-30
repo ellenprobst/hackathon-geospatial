@@ -65,7 +65,7 @@ input,select,textarea{font-family:inherit;font-size:inherit;}
 @keyframes blink{0%,60%,100%{opacity:1}30%{opacity:.2}}
 
 /* RIGHT INSPECTOR & PANELS */
-.right-col{position:absolute;top:74px;right:20px;bottom:80px;width:300px;display:flex;flex-direction:column;gap:10px;z-index:18;}
+.right-col{position:absolute;top:92px;right:20px;bottom:80px;width:300px;display:flex;flex-direction:column;gap:10px;z-index:18;}
 .card{background:rgba(244,242,238,.92);backdrop-filter:blur(4px);border:1px solid var(--rule);}
 .card-h{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-bottom:1px solid var(--rule);font-size:10px;letter-spacing:.18em;color:var(--ink);}
 .card-h .meta{color:var(--muted);font-size:9px;letter-spacing:.16em;}

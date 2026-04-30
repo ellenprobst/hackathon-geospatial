@@ -76,7 +76,8 @@ Issues: `https://github.com/ellenprobst/hackathon-geospatial/issues`
 
 Issues are the truth-source for handoff between Collin and Ellen.
 
-- **At the start of a session**, run `gh issue list --state open` to see what's outstanding. Surface any open issues that touch the area you're about to work in.
+- **At the start of a session**, run `gh issue list --state open` to see what's outstanding. Surface any open issues that touch the area you're about to work in. Treat assignment as ownership: if an issue is already assigned to someone, don't surface it as available work — the assignee is on it. Only unassigned issues count as open for triage.
+- **When picking up an issue to work on**, assign it first to whoever you're working as (`gh issue edit <num> --add-assignee @me`) so the other person sees it's claimed and doesn't double up.
 - **For bugs you find that aren't in scope**: open an issue (`gh issue create`) instead of silently fixing or shrugging it off. The other person can pick it up later.
 - **For feature requests mentioned in passing**: same — capture them as issues if they're out of the current task's scope.
 - **Before committing a fix**, check whether an open issue tracks it; reference it in the commit message (`Closes #12`) so it auto-closes on merge.

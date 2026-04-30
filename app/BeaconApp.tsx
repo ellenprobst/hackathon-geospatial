@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SEED_EVENTS } from './data/events';
 import type { AlertEvent, DraftPin, LayerVisibility, UserLocation } from './types';
 import { Rail } from './components/Rail';
@@ -15,7 +15,18 @@ import { Icon } from './components/Icon';
 export default function BeaconApp() {
   const [view, setView] = useState<'map' | 'list' | 'history'>('map');
   const [layers, setLayers] = useState<LayerVisibility>({ CRITICAL: true, URGENT: true, ADVISORY: true, OPPORTUNITY: true });
-  const [locations, setLocations] = useState<UserLocation[]>([]);
+  const [locations, setLocations] = useState<UserLocation[]>(() => {
+    try {
+      const saved = localStorage.getItem('beacon_locations');
+      return saved ? (JSON.parse(saved) as UserLocation[]) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('beacon_locations', JSON.stringify(locations));
+  }, [locations]);
   const [activeAlert, setActiveAlert] = useState<AlertEvent | null>(null);
   const [shareTarget, setShareTarget] = useState<AlertEvent | UserLocation | null>(null);
   const [subOpen, setSubOpen] = useState(false);
@@ -107,7 +118,7 @@ export default function BeaconApp() {
           </div>
         )}
 
-        <div className={`watermark ${sidePanelOpen ? '' : 'no-right'}`}>
+        <div className={`watermark ${(sidePanelOpen || showRightCol) ? '' : 'no-right'}`}>
           STRICTLY CONFIDENTIAL — BEACON.TO / SYSTEM 365
         </div>
 

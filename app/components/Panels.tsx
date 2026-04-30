@@ -223,7 +223,7 @@ export function AlertDrawer({ event, locations = [], onClose, onShare }: AlertDr
           return (
             <div key={i} className={`radio-row ${on ? 'on' : ''}`} onClick={() => setDone(d => ({ ...d, [k]: !d[k] }))} style={{ borderBottom: '1px dashed var(--rule-soft)' }}>
               <span className="box" />
-              <span style={{ flex: 1, fontSize: 12, lineHeight: 1.45, textDecoration: on ? 'line-through' : 'none', textDecorationColor: 'rgba(0,0,0,.35)', color: on ? 'var(--muted)' : 'var(--ink)' }}>{t}</span>
+              <span style={{ flex: 1, fontSize: 12, lineHeight: 1.45, textDecorationLine: on ? 'line-through' : 'none', textDecorationColor: on ? 'rgba(0,0,0,.35)' : 'transparent', color: on ? 'var(--muted)' : 'var(--ink)' }}>{t}</span>
             </div>
           );
         })}

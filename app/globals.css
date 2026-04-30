@@ -109,10 +109,11 @@ input,select,textarea{font-family:inherit;font-size:inherit;}
 .help{font-size:10px;color:var(--muted);margin-top:6px;letter-spacing:.04em;}
 
 .ac-pop{position:absolute;left:0;right:0;top:38px;background:var(--paper);border:1px solid var(--ink);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:20;max-height:240px;overflow:auto;}
-.ac-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-bottom:1px dashed var(--rule);cursor:pointer;font-size:11px;letter-spacing:.04em;line-height:1.3;}
+.ac-row{display:flex;align-items:center;flex-wrap:nowrap;gap:8px;padding:9px 10px;border-bottom:1px dashed var(--rule);cursor:pointer;font-size:11px;letter-spacing:.04em;line-height:1.3;}
 .ac-row:last-child{border-bottom:none;}
 .ac-row:hover{background:rgba(10,10,10,.05);}
-.ac-row svg{flex-shrink:0;color:var(--muted);}
+.ac-row svg{flex-shrink:0;width:16px;height:16px;color:var(--muted);}
+.ac-row .ac-label{flex:1;min-width:0;}
 .ac-row:hover svg{color:var(--accent);}
 .ac-label{flex:1;}
 .ac-loading{color:var(--muted);font-style:italic;letter-spacing:.18em;cursor:default;}
@@ -166,11 +167,11 @@ input,select,textarea{font-family:inherit;font-size:inherit;}
 .pin-label{position:absolute;font-size:10px;letter-spacing:.16em;background:var(--paper);padding:2px 6px;border:1px solid var(--ink);transform:translate(-50%, -150%);white-space:nowrap;pointer-events:none;}
 
 /* WATERMARK */
-.watermark{position:absolute;right:340px;top:50%;transform:translateY(-50%) rotate(180deg);writing-mode:vertical-rl;font-size:10px;letter-spacing:.4em;color:var(--muted-2);pointer-events:none;}
+.watermark{position:absolute;right:400px;top:50%;transform:translateY(-50%) rotate(180deg);writing-mode:vertical-rl;font-size:10px;letter-spacing:.4em;color:var(--muted-2);pointer-events:none;}
 .watermark.no-right{right:20px;}
 
 /* COORDS */
-.coords{position:absolute;right:340px;bottom:20px;font-size:10px;color:var(--muted);letter-spacing:.18em;z-index:14;}
+.coords{position:absolute;right:400px;bottom:20px;font-size:10px;color:var(--muted);letter-spacing:.18em;z-index:14;}
 .coords.no-right{right:80px;}
 
 /* ALERT DRAWER */

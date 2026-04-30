@@ -1,0 +1,161 @@
+{
+  "updated_at": "2026-04-30 12:40:02",
+  "events": [
+    {
+      "prime_street": "HUMBER VALLEY RD, ET",
+      "cross_streets": "RIVERWOOD PKWY / HUMBER RIVER RECREATIONAL TRL",
+      "dispatch_time": "2026-04-29T04:47:21",
+      "event_num": "F26061648",
+      "event_type": "Fire - Commercial/Industrial",
+      "alarm_lev": "3",
+      "beat": "431",
+      "units_disp": "A333, A411, A415, A421, A423, A423, A433, A433, A433, A441, C2, C34, C40, C40, C41, C42, C42, C43, C43, C43, C44, C44, C44, CMD30, CMD30, CMD30C, FI29, FI30, FI30, HR332, HZ145, HZ145, HZ145, HZ145, L426, L426, LA421, P121, P146, P344, P411, P412, P415, P421, P422, P423, P426, P426, P431, P431, P431, P431, P432, P433, P433, P433, P433, P435, P445, P445, PF121, PL432, PL432, R413, R425, R425, R434, REHAB01, S445, S445, T1"
+    },
+    {
+      "prime_street": "",
+      "cross_streets": "KEELE ST / HIGHWAY 401 X E",
+      "dispatch_time": "2026-04-30T12:08:17",
+      "event_num": "F26062360",
+      "event_type": "Check Call - Non Emergency",
+      "alarm_lev": "0",
+      "beat": "133",
+      "units_disp": "P144"
+    },
+    {
+      "prime_street": "",
+      "cross_streets": "NORTHLAND AVE / WESTON RD",
+      "dispatch_time": "2026-04-30T12:10:57",
+      "event_num": "F26062363",
+      "event_type": "Vehicle - Personal Injury",
+      "alarm_lev": "0",
+      "beat": "421",
+      "units_disp": "A421"
+    },
+    {
+      "prime_street": "MORRISON ST, TT",
+      "cross_streets": "/ LN S ADELAIDE E MORRISON",
+      "dispatch_time": "2026-04-30T12:14:34",
+      "event_num": "F26062366",
+      "event_type": "Natural Gas Leak",
+      "alarm_lev": "0",
+      "beat": "332",
+      "units_disp": "C33, HZ323, P315, P323"
+    },
+    {
+      "prime_street": "BOND AVE, NY",
+      "cross_streets": "/ DON MILLS RD",
+      "dispatch_time": "2026-04-30T12:17:02",
+      "event_num": "F26062369",
+      "event_type": "Alarm Single Source",
+      "alarm_lev": "0",
+      "beat": "123",
+      "units_disp": "R115, R122"
+    },
+    {
+      "prime_street": "M6H",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:22:44",
+      "event_num": "F26062374",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "345",
+      "units_disp": "P345"
+    },
+    {
+      "prime_street": "M1B",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:23:00",
+      "event_num": "F26062375",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "212",
+      "units_disp": "P212"
+    },
+    {
+      "prime_street": "M9C",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:24:21",
+      "event_num": "F26062376",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "444",
+      "units_disp": "P444"
+    },
+    {
+      "prime_street": "M6B",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:26:24",
+      "event_num": "F26062377",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "132",
+      "units_disp": "P135"
+    },
+    {
+      "prime_street": "M5A",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:29:02",
+      "event_num": "F26062381",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "333",
+      "units_disp": "A333"
+    },
+    {
+      "prime_street": "M6L",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:28:45",
+      "event_num": "F26062382",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "133",
+      "units_disp": "R133"
+    },
+    {
+      "prime_street": "M5R",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:29:48",
+      "event_num": "F26062383",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "312",
+      "units_disp": "L312"
+    },
+    {
+      "prime_street": "M5J",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:31:05",
+      "event_num": "F26062385",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "334"
+    },
+    {
+      "prime_street": "M2R",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:32:47",
+      "event_num": "F26062386",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "112"
+    },
+    {
+      "prime_street": "M6M",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:34:25",
+      "event_num": "F26062387",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "421"
+    },
+    {
+      "prime_street": "M6S",
+      "cross_streets": "",
+      "dispatch_time": "2026-04-30T12:34:37",
+      "event_num": "F26062388",
+      "event_type": "MEDICAL",
+      "alarm_lev": "0",
+      "beat": "422"
+    }
+  ]
+}

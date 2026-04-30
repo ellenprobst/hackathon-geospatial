@@ -1,0 +1,42 @@
+{
+  "header": {
+    "gtfs_realtime_version": "2.0",
+    "incrementality": "FULL_DATASET",
+    "timestamp": 1761840600
+  },
+  "entity": [
+    {
+      "id": "ttc-alert-501-001",
+      "alert": {
+        "active_period": [{ "start": 1761820800, "end": 1761868800 }],
+        "informed_entity": [{ "route_id": "501" }],
+        "cause": "MAINTENANCE",
+        "effect": "DETOUR",
+        "header_text": { "translation": [{ "text": "501 Queen: Diversion at Spadina", "language": "en" }] },
+        "description_text": { "translation": [{ "text": "Westbound 501 streetcars are diverting via King St between Spadina and Bathurst due to overhead wire maintenance. Expect delays of 10-15 minutes through the afternoon.", "language": "en" }] }
+      }
+    },
+    {
+      "id": "ttc-alert-line1-002",
+      "alert": {
+        "active_period": [{ "start": 1761838800, "end": 1761845400 }],
+        "informed_entity": [{ "route_id": "Line 1", "stop_id": "BLOOR" }],
+        "cause": "MEDICAL_EMERGENCY",
+        "effect": "REDUCED_SERVICE",
+        "header_text": { "translation": [{ "text": "Line 1: Delays at Bloor-Yonge", "language": "en" }] },
+        "description_text": { "translation": [{ "text": "Line 1 service operating with delays northbound and southbound between St. George and Bloor-Yonge due to a medical emergency at platform level.", "language": "en" }] }
+      }
+    },
+    {
+      "id": "ttc-alert-bus-003",
+      "alert": {
+        "active_period": [{ "start": 1761825600, "end": 1761912000 }],
+        "informed_entity": [{ "route_id": "29" }],
+        "cause": "CONSTRUCTION",
+        "effect": "DETOUR",
+        "header_text": { "translation": [{ "text": "29 Dufferin: Northbound detour", "language": "en" }] },
+        "description_text": { "translation": [{ "text": "29 Dufferin buses northbound are detouring via Lansdowne and Davenport between Bloor and Dupont due to watermain construction. Stops at Dufferin/Bloor and Dufferin/Dupont are not being served.", "language": "en" }] }
+      }
+    }
+  ]
+}

@@ -49,6 +49,7 @@ export default function BeaconApp() {
   }, [locations, locationsHydrated]);
 
   const [activeAlert, setActiveAlert] = useState<AlertEvent | null>(null);
+  const [alertSource, setAlertSource] = useState<'history' | null>(null);
   const [shareTarget, setShareTarget] = useState<AlertEvent | UserLocation | null>(null);
   const [subOpen, setSubOpen] = useState(false);
   const [subMode, setSubMode] = useState<'create' | 'edit'>('create');
@@ -118,7 +119,7 @@ export default function BeaconApp() {
     <div className="app">
       <Rail
         view={view}
-        setView={v => { setView(v as typeof view); setActiveAlert(null); setSubOpen(false); }}
+        setView={v => { setView(v as typeof view); setActiveAlert(null); setAlertSource(null); setSubOpen(false); }}
         onAdd={startCreate}
         locCount={locations.length}
         alertCount={visibleEvents.length}
@@ -130,7 +131,7 @@ export default function BeaconApp() {
           locations={locations}
           intensity={1}
           draftPin={subOpen ? draftPin : null}
-          onPickEvent={ev => { setActiveAlert(ev); setSubOpen(false); }}
+          onPickEvent={ev => { setActiveAlert(ev); setAlertSource(null); setSubOpen(false); }}
           onPickLocation={focusLoc}
           onMapClick={onMapClick}
           focusTarget={focusTarget}
@@ -175,12 +176,18 @@ export default function BeaconApp() {
         {!subOpen && view === 'history' && (
           <HistoryPanel
             events={SEED_EVENTS}
-            onPick={ev => { setActiveAlert(ev); setView('map'); }}
+            onPick={ev => { setActiveAlert(ev); setAlertSource('history'); setView('map'); }}
             onClose={() => setView('map')}
           />
         )}
         {activeAlert && !subOpen && (
-          <AlertDrawer event={activeAlert} locations={locations} onClose={() => setActiveAlert(null)} onShare={setShareTarget} />
+          <AlertDrawer
+            event={activeAlert}
+            locations={locations}
+            onClose={() => { setActiveAlert(null); setAlertSource(null); }}
+            onBack={alertSource === 'history' ? () => { setActiveAlert(null); setAlertSource(null); setView('history'); } : undefined}
+            onShare={setShareTarget}
+          />
         )}
 
         {shareTarget && <ShareModal thing={shareTarget} onClose={() => setShareTarget(null)} />}

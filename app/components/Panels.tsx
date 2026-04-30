@@ -176,12 +176,13 @@ interface AlertDrawerProps {
   event: AlertEvent | null;
   locations?: UserLocation[];
   onClose: () => void;
+  onBack?: () => void;
   onShare: (ev: AlertEvent) => void;
 }
 
 type Hit = UserLocation & { km: number };
 
-export function AlertDrawer({ event, locations = [], onClose, onShare }: AlertDrawerProps) {
+export function AlertDrawer({ event, locations = [], onClose, onBack, onShare }: AlertDrawerProps) {
   const storageKey = `the6watch_checks_${event?.id}`;
   const [done, setDone] = useState<Record<string, boolean>>(() => {
     if (!event?.id || typeof window === 'undefined') return {};
@@ -234,7 +235,14 @@ export function AlertDrawer({ event, locations = [], onClose, onShare }: AlertDr
   return (
     <aside className="drawer">
       <div className={`alert-head ${cls}`}>
-        <div className="pri">PRIORITY · {event.priority}</div>
+        <div className="alert-head-top">
+          {onBack ? (
+            <button className="back-btn" onClick={onBack} aria-label="Back to history"><span style={{ fontSize: 13, lineHeight: 1 }}>‹</span> HISTORY</button>
+          ) : (
+            <div className="pri">PRIORITY · {event.priority}</div>
+          )}
+        </div>
+        {onBack && <div className="pri" style={{ marginTop: 2 }}>PRIORITY · {event.priority}</div>}
         <div className="ev">{event.event}</div>
         <div className="when">{event.time?.toUpperCase()} · {event.ttl?.toUpperCase()}</div>
       </div>

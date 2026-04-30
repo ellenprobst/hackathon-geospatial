@@ -181,7 +181,9 @@ input,select,textarea{font-family:inherit;font-size:inherit;}
 .alert-head.urg{background:var(--urgent);color:var(--ink);}
 .alert-head.adv{background:var(--advisory);color:var(--ink);}
 .alert-head.opp{background:var(--opportunity);color:var(--paper);}
+.alert-head-top{display:flex;align-items:center;margin-bottom:10px;}
 .alert-head .pri{font-size:10px;letter-spacing:.3em;opacity:.85;}
+.back-btn{background:var(--paper);color:var(--ink);border:1.5px solid var(--ink);border-radius:2px;font-size:10px;letter-spacing:.2em;padding:4px 10px 3px;cursor:pointer;line-height:1;font-family:var(--mono);font-weight:700;display:inline-flex;align-items:center;gap:5px;box-shadow:2px 2px 0 rgba(0,0,0,.18);}
 .alert-head .ev{font-family:var(--sans);font-size:24px;font-weight:800;letter-spacing:-.01em;line-height:1.05;margin-top:6px;}
 .alert-head .when{font-size:10px;letter-spacing:.18em;margin-top:6px;opacity:.85;}
 

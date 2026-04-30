@@ -79,8 +79,8 @@ const DEFAULT_LOCATIONS: UserLocation[] = [
     priorities: ['CRITICAL', 'URGENT', 'ADVISORY'],
     notifs: ['push', 'sms'],
     radiusKm: 0.1,
-    lat: 43.6388,
-    lng: -79.4203,
+    lat: 43.6396,
+    lng: -79.4213,
   },
   {
     id: 'L05',
@@ -90,8 +90,8 @@ const DEFAULT_LOCATIONS: UserLocation[] = [
     priorities: ['CRITICAL', 'URGENT', 'ADVISORY'],
     notifs: ['push', 'sms'],
     radiusKm: 0.1,
-    lat: 43.6378,
-    lng: -79.4173,
+    lat: 43.6399,
+    lng: -79.4167,
   },
 ]
 

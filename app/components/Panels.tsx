@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { AlertEvent, UserLocation, Priority } from '../types';
 import { Icon } from './Icon';
 
@@ -182,8 +182,18 @@ interface AlertDrawerProps {
 type Hit = UserLocation & { km: number };
 
 export function AlertDrawer({ event, locations = [], onClose, onShare }: AlertDrawerProps) {
-  const [done, setDone] = useState<Record<string, boolean>>({});
+  const storageKey = `the6watch_checks_${event?.id}`;
+  const [done, setDone] = useState<Record<string, boolean>>(() => {
+    if (!event?.id || typeof window === 'undefined') return {};
+    try { return JSON.parse(localStorage.getItem(storageKey) || '{}'); } catch { return {}; }
+  });
   const [snoozed, setSnoozed] = useState(false);
+
+  useEffect(() => {
+    if (!event?.id) return;
+    try { localStorage.setItem(storageKey, JSON.stringify(done)); } catch { /* quota */ }
+  }, [done, storageKey, event?.id]);
+
   if (!event) return null;
   const cls = PRIORITY_CLASS[event.priority];
 

@@ -136,7 +136,7 @@ export default function BeaconApp() {
           locations={locations}
           intensity={1}
           draftPin={subOpen ? draftPin : null}
-          onPickEvent={ev => { setActiveAlert(ev); setAlertSource(null); setSubOpen(false); }}
+          onPickEvent={ev => { setActiveAlert(ev); setAlertSource(null); setSubOpen(false); setView('map'); }}
           onPickLocation={focusLoc}
           onMapClick={onMapClick}
           focusTarget={focusTarget}
@@ -186,13 +186,16 @@ export default function BeaconApp() {
           />
         )}
         {activeAlert && !subOpen && (
-          <AlertDrawer
-            event={activeAlert}
-            locations={locations}
-            onClose={() => { setActiveAlert(null); setAlertSource(null); }}
-            onBack={alertSource === 'history' ? () => { setActiveAlert(null); setAlertSource(null); setView('history'); } : undefined}
-            onShare={setShareTarget}
-          />
+          <>
+            <button className="drawer-close" onClick={() => { setActiveAlert(null); setAlertSource(null); }} aria-label="Close"><Icon name="close" /></button>
+            <AlertDrawer
+              event={activeAlert}
+              locations={locations}
+              onClose={() => { setActiveAlert(null); setAlertSource(null); }}
+              onBack={alertSource === 'history' ? () => { setActiveAlert(null); setAlertSource(null); setView('history'); } : undefined}
+              onShare={setShareTarget}
+            />
+          </>
         )}
 
         {shareTarget && <ShareModal thing={shareTarget} onClose={() => setShareTarget(null)} />}

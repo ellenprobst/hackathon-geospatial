@@ -9,6 +9,21 @@ const PC: Record<string, string> = {
 const TORONTO_CENTER: [number, number] = [43.653, -79.384];
 const DEFAULT_ZOOM = 12;
 
+function LocationLabel({ x, y, name }: { x: number; y: number; name: string }) {
+  const textRef = useRef<SVGTextElement>(null);
+  const [textW, setTextW] = useState(0);
+  useEffect(() => {
+    if (textRef.current) setTextW(textRef.current.getComputedTextLength());
+  }, [name]);
+  const padX = 6;
+  return (
+    <>
+      <rect x={x + 12} y={y - 22} width={textW + padX * 2} height="16" fill="#0A0A0A" />
+      <text ref={textRef} x={x + 12 + padX} y={y - 10} fontSize="10" letterSpacing="2" fill="#F4F2EE" fontFamily="JetBrains Mono" fontWeight="700">{name}</text>
+    </>
+  );
+}
+
 interface TorontoMapProps {
   events: AlertEvent[];
   locations: UserLocation[];
@@ -187,14 +202,12 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
         {locations.map(loc => {
           const { x, y } = project(loc.lat, loc.lng);
           const r = Math.max(40, metersToPx((loc.radiusKm || 1.5) * 1000, loc.lat));
-          const labelW = (loc.name?.length || 4) * 8 + 16;
           return (
             <g key={'l-' + loc.id} className="pin" style={{ cursor: 'pointer' }} onClick={e => { e.stopPropagation(); onPickLocation(loc); }}>
               <circle cx={x} cy={y} r={r} fill="rgba(10,10,10,.04)" stroke="#0A0A0A" strokeWidth="1" strokeDasharray="3 3" opacity=".75" />
               <rect x={x - 8} y={y - 8} width="16" height="16" fill="#F4F2EE" stroke="#0A0A0A" strokeWidth="1.4" />
               <rect x={x - 3} y={y - 3} width="6" height="6" fill="#0A0A0A" />
-              <rect x={x + 12} y={y - 22} width={labelW} height="16" fill="#0A0A0A" />
-              <text x={x + 18} y={y - 10} fontSize="10" letterSpacing="2" fill="#F4F2EE" fontFamily="JetBrains Mono" fontWeight="700">{loc.name?.toUpperCase()}</text>
+              <LocationLabel x={x} y={y} name={(loc.name ?? '').toUpperCase()} />
             </g>
           );
         })}

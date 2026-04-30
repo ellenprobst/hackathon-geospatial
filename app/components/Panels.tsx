@@ -18,7 +18,8 @@ const KIND_OPTIONS = [
 
 type RecoTier = { immediate: string[]; hour: string[]; before: string[]; optional: string[] };
 
-const RECO_LIB: Record<Priority, Record<string, RecoTier>> = {
+// Weather & opportunity events — keyed by priority then persona
+const WEATHER_RECO: Record<Priority, Record<string, RecoTier>> = {
   CRITICAL: {
     home:    { immediate: ['Close & lock all windows; bring kids/pets indoors.', 'Move car off the street if branches/flooding likely.'], hour: ['Charge phones + power banks now.', 'Fill bathtub if power loss is possible.'], before: ['Move valuables off basement floor.', 'Photograph property for insurance.'], optional: ['Check on elderly neighbours.'] },
     condo:   { immediate: ['Close balcony doors; stow loose planters & furniture.', 'Stay away from floor-to-ceiling windows.'], hour: ['Charge devices; locate stairwell exit.', 'Fill water bottles in case pumps fail.'], before: ['Unplug non-essential electronics.'], optional: ['Notify your concierge.'] },
@@ -27,18 +28,18 @@ const RECO_LIB: Record<Priority, Record<string, RecoTier>> = {
     cottage: { immediate: ['Secure dock lines; pull boat covers.', 'Bring in patio furniture, kayaks, BBQ propane.'], hour: ['Top up generator fuel.', 'Stage flashlights + radio.'], before: ['Photograph shoreline + structures.'], optional: ['Check on neighbours up the road.'] },
   },
   URGENT: {
-    home:    { immediate: ['Clear gutters of leaves/debris.', 'Park car somewhere not under trees.'], hour: ['Run sump pump test cycle.', 'Move basement boxes off the floor.'], before: ['Drip cold-water taps if deep freeze.'], optional: ['Stock up on quick groceries.'] },
-    condo:   { immediate: ['Check balcony drains for blockage.', 'Wipe window seals if leaks are an issue.'], hour: ['Charge devices.', 'Stage towels near doors.'], before: ['Plan an alternate commute route.'], optional: ['Notify concierge of leaks.'] },
-    office:  { immediate: ['Share alternate commute options with the team.', 'Check building drainage if at grade-level.'], hour: ['Re-time meetings off the disruption window.'], before: ['Forward office line to mobile.'], optional: ['Order team coffee/lunch in.'] },
-    school:  { immediate: ['Update bus routing & parents.', 'Move recess indoors.'], hour: ['Brief reception about late arrivals.'], before: ['Pre-stage rain gear at exits.'], optional: ['Push update to school app.'] },
-    cottage: { immediate: ['Pull dockside chairs & cushions.', 'Cover firewood pile.'], hour: ['Run a generator check.'], before: ['Clean out the eavestroughs.'], optional: ['Top up groceries from the marina.'] },
+    home:    { immediate: ['Cover frost-sensitive plants or bring them inside.', 'Disconnect outdoor hoses before the freeze.'], hour: ['Wrap exposed pipes in unheated spaces.', 'Move basement boxes off the floor if flooding is possible.'], before: ['Drip cold-water taps overnight if deep freeze expected.'], optional: ['Stock up on de-icer for walkways.'] },
+    condo:   { immediate: ['Bring in balcony plants; check balcony drains.', 'Close windows before the temperature drops.'], hour: ['Charge devices.', 'Stage towels near exterior doors in case of drafts.'], before: ['Plan an alternate commute if ice is forecast.'], optional: ['Notify concierge if balcony drain is blocked.'] },
+    office:  { immediate: ['Alert staff to icy conditions for the morning commute.', 'Check building entrance for ice hazards.'], hour: ['Re-time early meetings to account for delays.'], before: ['Forward office line to mobile in case of closures.'], optional: ['Order team breakfast in to avoid early travel.'] },
+    school:  { immediate: ['Monitor Environment Canada for school-closure thresholds.', 'Alert bus coordinator to morning road conditions.'], hour: ['Brief reception about late arrivals.'], before: ['Pre-stage sand/salt at all entrances.'], optional: ['Push a weather advisory to the school app.'] },
+    cottage: { immediate: ['Pull dockside chairs & cushions.', 'Cover the firewood pile and propane tanks.'], hour: ['Run a generator check.'], before: ['Clean out the eavestroughs before freeze.'], optional: ['Top up groceries from the marina.'] },
   },
   ADVISORY: {
-    home:    { immediate: ['Replace HVAC filter if past 60 days.', 'Close windows on the high-pollen side.'], hour: ['Limit outdoor exertion for sensitive folks.'], before: ['Run a HEPA in the bedroom tonight.'], optional: ["Hydrate; saline rinse if you're reactive."] },
-    condo:   { immediate: ['Switch HVAC to recirculate.', 'Shut balcony door.'], hour: ['Wipe down surfaces near vents.'], before: ['Run air purifier overnight.'], optional: ['Stock antihistamines.'] },
-    office:  { immediate: ['Switch HVAC mode; keep doors shut.', 'Reschedule outdoor meetings.'], hour: ['Offer remote-work option to sensitive staff.'], before: ['Add a HEPA to the meeting room.'], optional: ['Send a wellness note.'] },
-    school:  { immediate: ['Move recess indoors.', 'Notify families of children with asthma.'], hour: ['Brief PE staff.'], before: ['Run room HEPAs through dismissal.'], optional: ['Update the school app.'] },
-    cottage: { immediate: ['Skip the burn pile today.', 'Close screens on prevailing-wind side.'], hour: ['Run AC on recirculate.'], before: ['Stage allergy meds.'], optional: ['Reschedule the long paddle.'] },
+    home:    { immediate: ['Cover tender plants tonight; bring potted ones inside.', 'Disconnect any remaining outdoor hoses.'], hour: ['Limit late outdoor activity if temperature is near zero.'], before: ['Set a reminder to check pipes in the morning.'], optional: ["Ensure pets have warm shelter overnight."] },
+    condo:   { immediate: ['Bring balcony plants inside.', 'Close exterior-facing windows before bed.'], hour: ['Check weather app for overnight low.'], before: ['Run air purifier if dry air is a concern.'], optional: ['Keep a light layer accessible for the morning.'] },
+    office:  { immediate: ['Flag frost advisory in team chat for early commuters.', 'Reschedule outdoor client meetings if needed.'], hour: ['Check parking lot and building entrance for ice risk.'], before: ['Confirm any remote-work flex for tomorrow morning.'], optional: ['Send a brief weather note to the team.'] },
+    school:  { immediate: ['Notify families via school app about frost advisory.', 'Move morning outdoor supervision inside if near-zero.'], hour: ['Brief before-care staff.'], before: ['Salt all entrance walkways before 7 AM.'], optional: ['Update the school website.'] },
+    cottage: { immediate: ['Cover the garden beds; bring in tender potted plants.', 'Close screens on the north-facing side.'], hour: ['Verify heating is set properly overnight.'], before: ['Stage extra blankets in guest rooms.'], optional: ['Check on neighbouring properties if you know them.'] },
   },
   OPPORTUNITY: {
     home:    { immediate: ['Water plants deeply this morning.', 'Pull weeds while soil is loose.'], hour: ['Direct-sow tomatoes / peppers / basil.'], before: ['Apply slow-release fertilizer.'], optional: ['Photograph the garden for tracking.'] },
@@ -46,6 +47,47 @@ const RECO_LIB: Record<Priority, Record<string, RecoTier>> = {
     office:  { immediate: ['Open windows briefly for air exchange.'], hour: ['Walking 1:1s outdoors.'], before: ['Schedule team patio social.'], optional: ['Photograph the courtyard.'] },
     school:  { immediate: ['Outdoor classroom / nature walk window.', 'Garden club planting session.'], hour: ['Schedule recess outdoors.'], before: ['Plan the field-day rain alternative if weather shifts.'], optional: ['Capture photos for the newsletter.'] },
     cottage: { immediate: ['Best window to plant or transplant.', 'Shock the pool / open the dock.'], hour: ['Trim shoreline branches.', 'Stain the deck.'], before: ['Set out the rain barrels.'], optional: ['Star-gaze tonight.'] },
+  },
+};
+
+// Non-weather events — keyed by event category then persona
+type EventCategory = 'fire' | 'police' | 'road' | 'transit';
+
+const SOURCE_CATEGORY: Record<string, EventCategory> = {
+  'Toronto Fire': 'fire',
+  'Toronto Police': 'police',
+  '511 Ontario': 'road',
+  'TTC Service Alerts': 'transit',
+};
+
+const EVENT_RECO: Record<EventCategory, Record<string, RecoTier>> = {
+  fire: {
+    home:    { immediate: ['Close all windows and doors to limit smoke.', 'Stay out of the affected block until all-clear.'], hour: ['Monitor for smoke smell; call 911 if it spreads to your building.', 'Keep windows closed if you are within 1 km.'], before: ['Ventilate rooms only once authorities give the all-clear.'], optional: ['Check on elderly neighbours after the scene clears.'] },
+    condo:   { immediate: ['Close balcony doors immediately.', 'Do not use elevators — locate stairwell exits.'], hour: ['Check with building management for updates.', 'Charge devices in case of evacuation order.'], before: ['Wait for official all-clear before opening windows.'], optional: ['Report any smoke smell to the fire warden on your floor.'] },
+    office:  { immediate: ['Seal office windows and exterior doors.', 'Account for all staff.'], hour: ['Pause non-essential work; be ready to evacuate on short notice.', 'Check with building security for updates.'], before: ['Ventilate only after all-clear from fire authorities.'], optional: ['Log incident in the building emergency record.'] },
+    school:  { immediate: ['Initiate shelter-in-place; seal classroom windows.', 'Account for all students with an immediate head count.'], hour: ['Hold dismissal until fire department gives the all-clear.', 'Prepare emergency comms to parents.'], before: ['Ventilate rooms once official all-clear received.'], optional: ['Document incident for school board reporting.'] },
+    cottage: { immediate: ['Close all windows and doors.', 'Identify escape routes away from the fire direction.'], hour: ['Monitor wind direction — fire spreads fast in rural areas.', 'Alert neighbours along your road.'], before: ['Check roof and eaves for embers once the scene is cleared.'], optional: ['Review your property emergency exit plan.'] },
+  },
+  police: {
+    home:    { immediate: ['Lock all doors and windows now.', 'Stay away from the affected block until police clear the scene.'], hour: ['Monitor local updates; avoid unnecessary trips outside.'], before: ['Check exterior cameras once the scene clears.'], optional: ['Report anything suspicious to the police non-emergency line: 416-808-2222.'] },
+    condo:   { immediate: ['Lock your unit door and inform building security.'], hour: ['Avoid ground-floor exits if the scene is near your entrance.', 'Check with the concierge for building status.'], before: ['Review intercom footage if you have access.'], optional: ['Notify the condo management office.'] },
+    office:  { immediate: ['Lock lobby access; brief reception staff.', 'Move staff away from street-facing windows.'], hour: ['Restrict external visitor access until the scene is cleared.', 'Check in with any staff who have not reported.'], before: ['Review building access logs once secure.'], optional: ['Brief staff on personal safety protocols.'] },
+    school:  { immediate: ['Initiate hold-and-secure or lockdown if directed by police.', 'Account for all students immediately.'], hour: ['Hold all entrances; verify ID of anyone entering.', 'Notify TDSB and parent contacts.'], before: ['Debrief staff and document the incident fully.'], optional: ['Offer emotional support resources to affected students.'] },
+    cottage: { immediate: ['Lock all entry points on the property.', 'Avoid isolated trails or roads until the area is cleared.'], hour: ['Check on anyone else on the property.'], before: ['Verify outbuildings and vehicles are secured.'], optional: ['Contact OPP non-emergency if you observe anything further.'] },
+  },
+  road: {
+    home:    { immediate: ['Avoid the affected road; check 511.ontario.ca for a live detour.', 'Budget extra time if you need to travel through the area.'], hour: ['Notify anyone you are meeting of a possible delay.'], before: ['Check 511 for reopening updates before you leave.'], optional: ['Consider delaying the trip if it is not time-sensitive.'] },
+    condo:   { immediate: ['Check alternate routes before heading to your parking level.'], hour: ['Factor in extra walk or transit time for the detour.'], before: ['Set a 511 Ontario alert for your regular route.'], optional: ['Use a ride-share if the detour adds significant time.'] },
+    office:  { immediate: ['Alert your team to expect delays; share the 511 link.', 'Consider offering remote-work flex for affected commuters.'], hour: ['Adjust meeting start times if attendees are travelling through the closure.'], before: ['Confirm tomorrow\'s commute route is not also affected.'], optional: ['Post the alternate route in team chat.'] },
+    school:  { immediate: ['Alert the bus routing coordinator immediately.', 'Widen the late-arrival window for affected routes.'], hour: ['Notify parents via the school app of potential delays.'], before: ['Confirm after-school pickup plans for families on the affected route.'], optional: ['Coordinate with TTC for alternate student transit if needed.'] },
+    cottage: { immediate: ['Check 511 and Google Maps for alternate cottage-country routes.', 'Allow extra travel time before you depart.'], hour: ['Consider leaving at a different time to avoid the closure.'], before: ['Watch the 511 alert for estimated clearance time.'], optional: ['Notify anyone expecting you of the potential delay.'] },
+  },
+  transit: {
+    home:    { immediate: ['Check the TTC app or ttc.ca for real-time service updates.', 'Identify the nearest surface alternative (bus or streetcar).'], hour: ['Budget extra time if this route is part of your commute.'], before: ['Set a TTC alert for your line so you get updates automatically.'], optional: ['Consider a ride-share or Bike Share Toronto if the delay is long.'] },
+    condo:   { immediate: ['Check TTC real-time arrivals before heading downstairs.', 'Find the nearest surface route alternative.'], hour: ['Allow extra buffer — surface routes run slower in traffic.'], before: ['Save the TTC status page to your phone home screen.'], optional: ['Bike Share Toronto is an option if your destination is close.'] },
+    office:  { immediate: ['Alert your team to possible late arrivals.', 'Share the TTC status link in team chat for affected commuters.'], hour: ['Check if any meeting start times need adjusting.'], before: ['Monitor TTC updates until service normalises.'], optional: ['Consider declaring WFH flex if the delay extends into the peak window.'] },
+    school:  { immediate: ['Check if any staff or students rely on this line for their commute.', 'Update arrival-time expectations accordingly.'], hour: ['Notify families if the school shuttle uses this line.'], before: ['Monitor TTC updates; brief reception on expected late arrivals.'], optional: ['Brief staff about staggered arrivals if the delay is prolonged.'] },
+    cottage: { immediate: ['This TTC disruption does not affect cottage travel — no action needed.'], hour: [], before: [], optional: ['Check the TTC app for your city commute before heading north.'] },
   },
 };
 
@@ -279,7 +321,11 @@ export function AlertDrawer({ event, locations = [], onClose, onBack, onShare }:
     .sort((a, b) => a.km - b.km);
 
   const personaKind = hits[0]?.kind || 'home';
-  const recos = RECO_LIB[event.priority]?.[personaKind] || RECO_LIB[event.priority]?.home || { immediate: [], hour: [], before: [], optional: [] };
+  const empty: RecoTier = { immediate: [], hour: [], before: [], optional: [] };
+  const eventCategory = SOURCE_CATEGORY[event.source];
+  const recos: RecoTier = eventCategory
+    ? (EVENT_RECO[eventCategory]?.[personaKind] || EVENT_RECO[eventCategory]?.home || empty)
+    : (WEATHER_RECO[event.priority]?.[personaKind] || WEATHER_RECO[event.priority]?.home || empty);
 
   const tier = (key: string, label: string, items: string[]) => {
     if (!items || !items.length) return null;

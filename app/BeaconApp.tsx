@@ -44,6 +44,7 @@ export default function BeaconApp() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftPin, setDraftPin] = useState<DraftPin | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [focusTarget, setFocusTarget] = useState<{ lat: number; lng: number; zoom?: number; ts: number } | null>(null);
 
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(null), 2200); };
 
@@ -94,6 +95,7 @@ export default function BeaconApp() {
 
   const focusLoc = (loc: UserLocation) => {
     setView('map');
+    setFocusTarget({ lat: loc.lat, lng: loc.lng, zoom: 14, ts: Date.now() });
     flash('FOCUSED — ' + loc.name);
   };
 
@@ -119,6 +121,7 @@ export default function BeaconApp() {
           onPickEvent={ev => { setActiveAlert(ev); setSubOpen(false); }}
           onPickLocation={focusLoc}
           onMapClick={onMapClick}
+          focusTarget={focusTarget}
         />
 
         <TopBar alertCount={visibleEvents.length} />

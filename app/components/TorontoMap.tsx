@@ -17,9 +17,10 @@ interface TorontoMapProps {
   draftPin: DraftPin | null;
   intensity?: number;
   onMapClick: (pt: { lat: number; lng: number }) => void;
+  focusTarget?: { lat: number; lng: number; zoom?: number; ts: number } | null;
 }
 
-export function TorontoMap({ events, locations, onPickEvent, onPickLocation, draftPin, intensity = 1, onMapClick }: TorontoMapProps) {
+export function TorontoMap({ events, locations, onPickEvent, onPickLocation, draftPin, intensity = 1, onMapClick, focusTarget }: TorontoMapProps) {
   const mapEl = useRef<HTMLDivElement>(null);
   const overlayEl = useRef<SVGSVGElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -84,6 +85,11 @@ export function TorontoMap({ events, locations, onPickEvent, onPickLocation, dra
     return () => cleanup?.();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!focusTarget || !mapRef.current) return;
+    mapRef.current.flyTo([focusTarget.lat, focusTarget.lng], focusTarget.zoom ?? 14, { duration: 0.8 });
+  }, [focusTarget]);
 
   const project = (lat: number, lng: number) => {
     if (!mapRef.current) return { x: 0, y: 0 };
